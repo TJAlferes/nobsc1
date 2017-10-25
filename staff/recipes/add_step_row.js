@@ -1,4 +1,4 @@
-function addStepRow(e) {  // This is INSANE! Use hyperapp or React ASAP!
+function addStepRow(e) {  // This is INSANE! Use hyperapp or React ASAP! ... sure, or just use AJAX for now, ya big dummy
 	var stepsDiv = document.getElementById('steps_div');
 	var addStepButton = document.getElementById('add_step_button');
 	var newStepRow = document.createElement("div");
