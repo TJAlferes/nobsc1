@@ -1,27 +1,19 @@
 function cmsSubmitRecipeActionOne() {
+	var imageToSizeCheck = document.getElementsByClassName("submitted_image");
 	var addEquipmentButton = document.getElementById('add_equipment_button');
 	var addIngredientButton = document.getElementById('add_ingredient_button');
 	var addStepButton = document.getElementById('add_step_button');
 	var removeRowButtons = document.getElementsByClassName('remove_row_button');
-	var selectEquipmentType = document.getElementsByClassName('select_equipment_type');
-	var selectIngredientType = document.getElementsByClassName('select_ingredient_type');
+	for (var i = 0; i < imageToSizeCheck.length; i++) { imageToSizeCheck[i].addEventListener('click', function(e) { clientSideEnforceImageSize(e); }, false); }
 	addEquipmentButton.addEventListener('click', function(e) { prepareEquipmentRow(e); }, false);
 	addIngredientButton.addEventListener('click', function(e) { prepareIngredientRow(e); }, false);
 	addStepButton.addEventListener('click', function(e) { addStepRow(e); }, false);
-	for (var i = 0; i < removeRowButtons.length; i++) {
-		removeRowButtons[i].addEventListener('click', function(e) { removeRow(e); }, false);
-	}
-	for (var i = 0; i < selectEquipmentType.length; i++) {
-		selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
-	}
-	for (var i = 0; i < selectIngredientType.length; i++) {
-		selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
-	}
+	for (var i = 0; i < removeRowButtons.length; i++) { removeRowButtons[i].addEventListener('click', function(e) { removeRow(e); }, false); }
 }
 
 
 
-document.getElementById("submitted_image").onchange = function () {
+function clientSideEnforceImageSize(e) {
     var reader = new FileReader();
     reader.onload = function(e) {
 		var image = new Image();
@@ -36,51 +28,8 @@ document.getElementById("submitted_image").onchange = function () {
 			}
 		}
     }
-	reader.readAsDataURL(this.files[0]);
+	reader.readAsDataURL(this.files[0]);  // document this
 }
-
-
-
-function matchEquipmentToType(e) {
-	var selectEquipmentType = e.target;
-	var selectEquipment = selectIngredientType.nextSibling.nextSibling;
-	
-	selectEquipment.innerHTML = "";
-	if (selectEquipmentType.value == "1") {
-		var optionArray = JSON.parse('<?php echo json_encode($allPreparingEquipment); ?>');
-	} else if (selectEquipmentType.value == "2") {
-		var optionArray = JSON.parse('<?php echo json_encode($allCookingEquipment); ?>');
-	}
-	for (var option in optionArray) {
-		var pair = optionArray[option].split("|");
-		var newOption = document.createElement("option");
-		newOption.value = pair[0];
-		newOption.innerHTML = pair[1];
-		s2.options.add(newOption);
-	}
-	e.preventDefault();
-	e.stopPropagation();
-}
-
-function matchIngredientToType(e) {
-	var selectIngredientType = e.target;
-	var selectIngredient = selectIngredientType.nextSibling.nextSibling.nextSibling;
-
-	selectIngredient.innerHTML = "";
-	if (selectIngredientType.value == "3") {
-		var optionArray = JSON.parse('<?php echo json_encode($allBeef); ?>');
-	}
-	for (var option in optionArray) {
-		var pair = optionArray[option].split("|");
-		var newOption = document.createElement("option");
-		newOption.value = pair[0];
-		newOption.innerHTML = pair[1];
-		selectIngredient.options.add(newOption);
-	}
-	e.preventDefault();
-	e.stopPropagation();
-}
-
 
 
 
@@ -129,9 +78,9 @@ function constructIngredientRow() {
 	newIngredientRow.innerHTML = this.responseText;  // responseXML?
 }
 function prepareIngredientRow(e) {
-  var allIngredientsDataJ = JSON.parse('<?php echo json_encode($allIngredientsData); ?>');
-  postJSON('recipes/new_ingredient_row.php', allIngredientsDataJ);
-  getJSON('recipes/new_ingredient_row.php', constructIngredientRow);
+	var allIngredientsDataJ = JSON.parse('<?php echo json_encode($allIngredientsData); ?>');
+	postJSON('recipes/new_ingredient_row.php', allIngredientsDataJ);
+	getJSON('recipes/new_ingredient_row.php', constructIngredientRow);
 }
 
 

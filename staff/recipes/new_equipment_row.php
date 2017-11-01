@@ -21,8 +21,8 @@ if (isset($_POST['allEquipmentDataJ'])) {
 <label>Type:</label> <!-- remember, this is just a filter to help them select the equipment -->
 <select required> <!-- onchange, the Equipment select list below should have its options updated -->
 	<option></option>
-	<option value="1">Preparing</option>
-	<option value="2">Cooking</option>
+	<option value="2">Preparing</option>
+	<option value="3">Cooking</option>
 </select>
 <label>Equipment:</label>
 <select required>
