@@ -293,10 +293,6 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 		<div id="page">
 			<div id="form">
 			<!-- <form action="" method="post" enctype="multipart/form-data"> -->
-				<!-- <p><pre><?php // var_dump($allIngredients); ?></pre></p> -->
-				<p><?php echo json_encode($allPreparingEquipment); ?></p>
-				<br><br><br><br>
-				<p><?php echo json_encode($allCookingEquipment); ?></p>
 				<h1>Submit New Recipe</h1>
 				
 				<div>
@@ -397,7 +393,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<select class="select_equipment" required>
 							<option></option>
 						</select>
-						<button class="remove_row_button">Remove</button>
+						<button class="remove_equipment_row_button">Remove</button>
 					</div>
 					
 					
@@ -421,7 +417,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<select class="select_equipment" required>
 							<option></option>
 						</select>
-						<button class="remove_row_button">Remove</button>
+						<button class="remove_equipment_row_button">Remove</button>
 					</div>
 					
 					
@@ -445,7 +441,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<select class="select_equipment" required>
 							<option></option>
 						</select>
-						<button class="remove_row_button">Remove</button>
+						<button class="remove_equipment_row_button">Remove</button>
 					</div>
 					
 					
@@ -479,7 +475,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<select class="select_ingredient" required>
 							<option></option>
 						</select>
-						<button class="remove_row_button">Remove</button>
+						<button class="remove_ingredient_row_button">Remove</button>
 					</div>
 					<div class="ingredient_row">
 						<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
@@ -505,7 +501,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<select class="select_ingredient" required>
 							<option></option>
 						</select>
-						<button class="remove_row_button">Remove</button>
+						<button class="remove_ingredient_row_button">Remove</button>
 					</div>
 					<div class="ingredient_row">
 						<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
@@ -531,7 +527,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<select class="select_ingredient" required>
 							<option></option>
 						</select>
-						<button class="remove_row_button">Remove</button>
+						<button class="remove_ingredient_row_button">Remove</button>
 					</div>
 					<button id="add_ingredient_button">Add Ingredient</button>
 				</div>
@@ -540,13 +536,13 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 				<div class="recipe_additions" id="steps_div">
 					<p class="red_style">11. Recipe Directions</p>
 					<div class="step_row">
-						<label>Step:</label><input type="text"><button class="remove_row_button">Remove</button>
+						<label>Step:</label><input type="text"><button class="remove_step_row_button">Remove</button>
 					</div>
 					<div class="step_row">
-						<label>Step:</label><input type="text"><button class="remove_row_button">Remove</button>
+						<label>Step:</label><input type="text"><button class="remove_step_row_button">Remove</button>
 					</div>
 					<div class="step_row">
-						<label>Step:</label><input type="text"><button class="remove_row_button">Remove</button>
+						<label>Step:</label><input type="text"><button class="remove_step_row_button">Remove</button>
 					</div>
 					<button id="add_step_button">Add Step</button>
 				</div>
@@ -555,19 +551,58 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 				<div>
 					<input type="submit" name="submit" id="submit_button" value="Submit Recipe">
 				</div>
-				<p><?php echo json_last_error(); ?></p>
-				<p><?php echo json_last_error_msg(); ?></p>
 			<!-- </form> -->
 			</div>
 		</div>
 	</main>
-<script src="../js/staff/submit_recipe.js"></script>
 <script>
-var selectEquipmentType = document.getElementsByClassName('select_equipment_type');
-var selectIngredientType = document.getElementsByClassName('select_ingredient_type');
+function cmsSubmitRecipeActionOne(e) {
+	var imageToSizeCheck = document.getElementsByClassName("submitted_image");
+	var selectEquipmentType = document.getElementsByClassName('select_equipment_type');
+	var selectIngredientType = document.getElementsByClassName('select_ingredient_type');
+	var addEquipmentButton = document.getElementById('add_equipment_button');
+	var addIngredientButton = document.getElementById('add_ingredient_button');
+	var addStepButton = document.getElementById('add_step_button');
+	var removeEquipmentRowButtons = document.getElementsByClassName('remove_equipment_row_button');
+	var removeIngredientRowButtons = document.getElementsByClassName('remove_ingredient_row_button');
+	var removeStepRowButtons = document.getElementsByClassName('remove_step_row_button');
+	
+	for (var i = 0; i < imageToSizeCheck.length; i++) { imageToSizeCheck[i].addEventListener('click', function(e) { clientSideEnforceImageSize(e); }, false); }
+	for (var i = 0; i < selectEquipmentType.length; i++) { selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false); }
+	for (var i = 0; i < selectIngredientType.length; i++) { selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false); }
+	addEquipmentButton.addEventListener('click', function(e) { prepareEquipmentRow(e); }, false);
+	addIngredientButton.addEventListener('click', function(e) { prepareIngredientRow(e); }, false);
+	addStepButton.addEventListener('click', function(e) { addStepRow(e); }, false);
+	for (var i = 0; i < removeEquipmentRowButtons.length; i++) { removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false); }
+	for (var i = 0; i < removeIngredientRowButtons.length; i++) { removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false); }
+	//for (var i = 0; i < removeEquipmentRowButtons.length; i++) { removeEquipmentRowButtons[i].addEventListener('blur', function(e) { stopBlurs(e); }, {once: true}); }
+	//for (var i = 0; i < removeIngredientRowButtons.length; i++) { removeIngredientRowButtons[i].addEventListener('blur', function(e) { stopBlurs(e); }, {once: true}); }
+	for (var i = 0; i < removeStepRowButtons.length; i++) { removeStepRowButtons[i].addEventListener('click', function(e) { removeStepRow(e); }, false); }
+	//e.preventDefault();
+	//e.stopPropagation();
+}
 
-for (var i = 0; i < selectEquipmentType.length; i++) { selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false); }
-for (var i = 0; i < selectIngredientType.length; i++) { selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false); }
+
+
+function clientSideEnforceImageSize(e) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+		var image = new Image();
+		image.src = e.target.result;
+		image.onload = function() {
+			var width = this.width;
+			var height = this.height;
+			if ((width != 480) || (height != 320)) {
+				alert("Image dimensions must be 480 pixels wide and 320 pixels high.");
+			} else {
+			document.getElementById("preview_image").src = e.target.result;
+			}
+		}
+    }
+	reader.readAsDataURL(this.files[0]);  // document this
+}
+
+
 
 function matchEquipmentToType(e) {
 	var s1 = e.target;
@@ -679,6 +714,150 @@ function matchIngredientToType(e) {
 	e.preventDefault();
 	e.stopPropagation();
 }
+
+
+
+function getJSON(url, callback) {
+	var xhttp = new XMLHttpRequest();
+	xhttp.open("GET", url, true);
+	xhttp.onreadystatechange = function() {
+		if (xhttp.readyState == 4 && callback) {
+			callback(xhttp);
+		}
+	}
+	xhttp.send();
+}
+
+
+
+function constructEquipmentRow(xhttp) {
+	var equipmentDiv = document.getElementById('equipment_div');
+	var addEquipmentButton = document.getElementById('add_equipment_button');
+	var newEquipmentRow = document.createElement("div");
+	
+	newEquipmentRow.setAttribute("class", "equipment_row");
+	equipmentDiv.insertBefore(newEquipmentRow, addEquipmentButton);
+	newEquipmentRow.innerHTML = xhttp.responseText;
+}
+
+function activateEquipmentRow() {
+	var equipmentDiv = document.getElementById('equipment_div');
+	var selectEquipmentType = equipmentDiv.getElementsByClassName('select_equipment_type');
+	var removeEquipmentRowButtons = equipmentDiv.getElementsByClassName('remove_equipment_row_button');
+	
+	for (var i = 0; i < selectEquipmentType.length; i++) { selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false); }
+	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
+		removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
+		/*
+		if (it doesnt already have the event listener attached (you could give it a data-attribute to flag it as attached or not)) { this would stop the extra handlers from being attached, but it wouldn't solve the issue of the last one not having any
+			removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
+		}
+		*/
+	}
+}
+
+function prepareEquipmentRow(e) {
+	getJSON('recipes/new_equipment_row.php', constructEquipmentRow);
+	activateEquipmentRow();
+	e.preventDefault();
+	e.stopPropagation();
+}
+
+
+
+function constructIngredientRow(xhttp) {
+	var ingredientsDiv = document.getElementById('ingredients_div');
+	var addIngredientButton = document.getElementById('add_ingredient_button');
+	var newIngredientRow = document.createElement("div");
+	
+	newIngredientRow.setAttribute("class", "ingredient_row");
+	ingredientsDiv.insertBefore(newIngredientRow, addIngredientButton);
+	newIngredientRow.innerHTML = xhttp.responseText;
+}
+
+function activateIngredientRow() {
+	var ingredientsDiv = document.getElementById('ingredients_div');
+	var selectIngredientType = ingredientsDiv.getElementsByClassName('select_ingredient_type');
+	var removeIngredientRowButtons = ingredientsDiv.getElementsByClassName('remove_ingredient_row_button');
+	
+	for (var i = 0; i < selectIngredientType.length; i++) { selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false); }
+	for (var i = 0; i < removeIngredientRowButtons.length; i++) { removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false); }
+}
+
+function prepareIngredientRow(e) {
+	getJSON('recipes/new_ingredient_row.php', constructIngredientRow);
+	activateIngredientRow();
+	e.preventDefault();
+	e.stopPropagation();
+}
+
+
+
+function addStepRow(e) {
+	var stepsDiv = document.getElementById('steps_div');
+	var addStepButton = document.getElementById('add_step_button');
+	var newStepRow = document.createElement("div");
+	var nSR2 = document.createElement("label");
+	var nSR3 = document.createElement("input");
+	var nSR4 = document.createElement("button");
+	var nSR5 = document.createTextNode("Step:");
+	var nSR6 = document.createTextNode("Remove");
+	newStepRow.setAttribute("class", "step_row");
+	nSR3.type = "text";
+	nSR4.setAttribute("class", "remove_step_row_button");
+	newStepRow.appendChild(nSR2);
+	newStepRow.appendChild(nSR3);
+	newStepRow.appendChild(nSR4);
+	nSR2.appendChild(nSR5);
+	nSR4.appendChild(nSR6);
+	stepsDiv.insertBefore(newStepRow, addStepButton);
+	nSR4.addEventListener('click', function(e) { removeStepRow(e); }, false);
+	e.preventDefault();
+	e.stopPropagation();
+}
+
+
+
+function removeEquipmentRow(e) {
+	var clicked = e.target;
+	var divToRemove = clicked.parentNode;
+	var stepsDiv = document.getElementById('equipment_div');
+	
+	stepsDiv.removeChild(divToRemove);
+	//clicked = null;
+	//divToRemove = null;
+	e.preventDefault();
+	e.stopPropagation();
+}
+
+function removeIngredientRow(e) {
+	var clicked = e.target;
+	var divToRemove = clicked.parentNode;
+	var stepsDiv = document.getElementById('ingredients_div');
+	
+	stepsDiv.removeChild(divToRemove);
+	//clicked = null;
+	//divToRemove = null;
+	e.preventDefault();
+	e.stopPropagation();
+}
+
+function removeStepRow(e) {
+	var clicked = e.target;
+	var divToRemove = clicked.parentNode;
+	var stepsDiv = document.getElementById('steps_div');
+	
+	stepsDiv.removeChild(divToRemove);
+	e.preventDefault();
+	e.stopPropagation();
+}
+
+
+
+window.addEventListener("load", function() { cmsSubmitRecipeActionOne(); }, false);
+
+
+
 </script>
 </body>
 </html>

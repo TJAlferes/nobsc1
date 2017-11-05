@@ -57,9 +57,14 @@ function constructEquipmentRow() {
 	var equipmentDiv = document.getElementById('equipment_div');
 	var addEquipmentButton = document.getElementById('add_equipment_button');
 	var newEquipmentRow = document.createElement("div");
+	var newSelectEquipmentType = newEquipmentRow.getElementsByClassName('select_equipment_type');
+	
 	newEquipmentRow.setAttribute("class", "equipment_row");
 	equipmentDiv.insertBefore(newEquipmentRow, addEquipmentButton);
 	newEquipmentRow.innerHTML = this.responseText;  // responseXML?
+	
+	newEquipmentRow.addEventListener('click', function(e) { removeRow(e); }, false);
+	newSelectEquipmentType[0].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
 }
 function prepareEquipmentRow(e) {
 	var allEquipmentDataJ = JSON.parse('<?php echo json_encode($allEquipmentData); ?>');
@@ -73,9 +78,14 @@ function constructIngredientRow() {
 	var ingredientsDiv = document.getElementById('ingredients_div');
 	var addIngredientButton = document.getElementById('add_ingredient_button');
 	var newIngredientRow = document.createElement("div");
+	var newSelectIngredientType = newIngredientRow.getElementsByClassName('select_ingredient_type');
+	
 	newIngredientRow.setAttribute("class", "ingredient_row");
 	ingredientsDiv.insertBefore(newIngredientRow, addIngredientButton);
 	newIngredientRow.innerHTML = this.responseText;  // responseXML?
+	
+	newIngredientRow.addEventListener('click', function(e) { removeRow(e); }, false);
+	newSelectIngredientType[0].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
 }
 function prepareIngredientRow(e) {
 	var allIngredientsDataJ = JSON.parse('<?php echo json_encode($allIngredientsData); ?>');

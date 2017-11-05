@@ -1,14 +1,3 @@
-<?php
-
-header("Content-type: application/json");
-
-if (isset($_POST['allEquipmentDataJ'])) {
-	$allEquipmentData = json_decode($_POST['allEquipmentDataJ']);
-	$allPreparingEquipment = allEquipmentData[0];
-	$allCookingEquipment = allEquipmentData[1];
-}
-
-?>
 <label>Amount:</label>
 <select required>
 	<option></option>
@@ -18,27 +7,14 @@ if (isset($_POST['allEquipmentDataJ'])) {
 	<option value="4">4</option>
 	<option value="5">5</option>
 </select>
-<label>Type:</label> <!-- remember, this is just a filter to help them select the equipment -->
-<select required> <!-- onchange, the Equipment select list below should have its options updated -->
+<label>Type:</label>
+<select class="select_equipment_type" required>
 	<option></option>
 	<option value="2">Preparing</option>
 	<option value="3">Cooking</option>
 </select>
 <label>Equipment:</label>
-<select required>
+<select class="select_equipment" required>
 	<option></option>
-	<?php
-	echo '<option value="test">Test</option>';
-	?>
-	<!-- these get dynamically updated based on the selected type above -->
-	<?php
-	if (/*value 1 is selected*/) {
-		echo '<option value="' . $allPreparingEquipment[0] . '">' . $allPreparingEquipment[1] . '</option>';
-	}
-	
-	if (/*value 2 is selected*/) {
-		echo '<option value="' . $allCookingEquipment[0] . '">' . $allCookingEquipment[1] . '</option>';
-	}
-	?>
 </select>
-<button class="remove_row_button">Remove</button>
+<button class="remove_equipment_row_button">Remove</button>
