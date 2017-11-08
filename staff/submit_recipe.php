@@ -24,11 +24,11 @@ $conn = new PDO($dsn, DB_UN, DB_PW, $opt);
 
 
 // data for equipment row
-$sql = 'SELECT equipment_id, equipment_name FROM nobsc_equipment WHERE equipment_type_id = 2';
+$sql = 'SELECT equipment_id, equipment_name FROM nobsc_equipment WHERE equipment_type_id = 2 ORDER BY equipment_name ASC';
 $stmt = $conn->query($sql);
 $allPreparingEquipment = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$sql = 'SELECT equipment_id, equipment_name FROM nobsc_equipment WHERE equipment_type_id = 3';
+$sql = 'SELECT equipment_id, equipment_name FROM nobsc_equipment WHERE equipment_type_id = 3 ORDER BY equipment_name ASC';
 $stmt = $conn->query($sql);
 $allCookingEquipment = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
@@ -372,78 +372,80 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 				<div class="recipe_additions" id="equipment_div">
 					<p class="red_style">9. Recipe Equipment</p>
 					
-					
-					<div class="equipment_row">
-						<label>Amount:</label>
-						<select required>
-							<option></option>
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-						<label>Type:</label>
-						<select class="select_equipment_type" required>
-							<option></option>
-							<option value="2">Preparing</option>
-							<option value="3">Cooking</option>
-						</select>
-						<label>Equipment:</label>
-						<select class="select_equipment" required>
-							<option></option>
-						</select>
-						<button class="remove_equipment_row_button">Remove</button>
+					<div id="equipment_rows_container">
+						
+						<div class="equipment_row">
+							<label>Amount:</label>
+							<select required>
+								<option></option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+							</select>
+							<label>Type:</label>
+							<select class="select_equipment_type" required>
+								<option></option>
+								<option value="2">Preparing</option>
+								<option value="3">Cooking</option>
+							</select>
+							<label>Equipment:</label>
+							<select class="select_equipment" required>
+								<option></option>
+							</select>
+							<button class="remove_equipment_row_button">Remove</button>
+						</div>
+						
+						
+						<div class="equipment_row">
+							<label>Amount:</label>
+							<select required>
+								<option></option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+							</select>
+							<label>Type:</label>
+							<select class="select_equipment_type" required>
+								<option></option>
+								<option value="2">Preparing</option>
+								<option value="3">Cooking</option>
+							</select>
+							<label>Equipment:</label>
+							<select class="select_equipment" required>
+								<option></option>
+							</select>
+							<button class="remove_equipment_row_button">Remove</button>
+						</div>
+						
+						
+						<div class="equipment_row">
+							<label>Amount:</label>
+							<select required>
+								<option></option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+							</select>
+							<label>Type:</label>
+							<select class="select_equipment_type" required>
+								<option></option>
+								<option value="2">Preparing</option>
+								<option value="3">Cooking</option>
+							</select>
+							<label>Equipment:</label>
+							<select class="select_equipment" required>
+								<option></option>
+							</select>
+							<button class="remove_equipment_row_button">Remove</button>
+						</div>
+						
 					</div>
-					
-					
-					<div class="equipment_row">
-						<label>Amount:</label>
-						<select required>
-							<option></option>
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-						<label>Type:</label>
-						<select class="select_equipment_type" required>
-							<option></option>
-							<option value="2">Preparing</option>
-							<option value="3">Cooking</option>
-						</select>
-						<label>Equipment:</label>
-						<select class="select_equipment" required>
-							<option></option>
-						</select>
-						<button class="remove_equipment_row_button">Remove</button>
-					</div>
-					
-					
-					<div class="equipment_row">
-						<label>Amount:</label>
-						<select required>
-							<option></option>
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-						<label>Type:</label>
-						<select class="select_equipment_type" required>
-							<option></option>
-							<option value="2">Preparing</option>
-							<option value="3">Cooking</option>
-						</select>
-						<label>Equipment:</label>
-						<select class="select_equipment" required>
-							<option></option>
-						</select>
-						<button class="remove_equipment_row_button">Remove</button>
-					</div>
-					
 					
 					<button id="add_equipment_button">Add Equipment</button>
 				</div>
@@ -451,84 +453,92 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 				
 				<div class="recipe_additions" id="ingredients_div">
 					<p class="red_style">10. Recipe Ingredients</p>
-					<div class="ingredient_row">
-						<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
-						<label>Unit:</label>
-						<select required>
-							<option></option>
-							<?php
-							foreach ($allMeasurements as $key => $value) {
-								echo '<option value="' . $key . '">' . $value . '</option>';
-							}
-							?>
-						</select>
-						<label>Type:</label>
-						<select class="select_ingredient_type" required>
-							<option></option>
-							<?php
-							foreach ($allIngredientTypes as $key => $value) {
-								echo '<option value="' . $key . '">' . $value . '</option>';
-							}
-							?>
-						</select>
-						<label>Ingredient:</label>
-						<select class="select_ingredient" required>
-							<option></option>
-						</select>
-						<button class="remove_ingredient_row_button">Remove</button>
+					
+					<div id="ingredient_rows_container">
+					
+						<div class="ingredient_row">
+							<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
+							<label>Unit:</label>
+							<select required>
+								<option></option>
+								<?php
+								foreach ($allMeasurements as $key => $value) {
+									echo '<option value="' . $key . '">' . $value . '</option>';
+								}
+								?>
+							</select>
+							<label>Type:</label>
+							<select class="select_ingredient_type" required>
+								<option></option>
+								<?php
+								foreach ($allIngredientTypes as $key => $value) {
+									echo '<option value="' . $key . '">' . $value . '</option>';
+								}
+								?>
+							</select>
+							<label>Ingredient:</label>
+							<select class="select_ingredient" required>
+								<option></option>
+							</select>
+							<button class="remove_ingredient_row_button">Remove</button>
+						</div>
+						
+						<div class="ingredient_row">
+							<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
+							<label>Unit:</label>
+							<select required>
+								<option></option>
+								<?php
+								foreach ($allMeasurements as $key => $value) {
+									echo '<option value="' . $key . '">' . $value . '</option>';
+								}
+								?>
+							</select>
+							<label>Type:</label>
+							<select class="select_ingredient_type" required>
+								<option></option>
+								<?php
+								foreach ($allIngredientTypes as $key => $value) {
+									echo '<option value="' . $key . '">' . $value . '</option>';
+								}
+								?>
+							</select>
+							<label>Ingredient:</label>
+							<select class="select_ingredient" required>
+								<option></option>
+							</select>
+							<button class="remove_ingredient_row_button">Remove</button>
+						</div>
+						
+						<div class="ingredient_row">
+							<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
+							<label>Unit:</label>
+							<select required>
+								<option></option>
+								<?php
+								foreach ($allMeasurements as $key => $value) {
+									echo '<option value="' . $key . '">' . $value . '</option>';
+								}
+								?>
+							</select>
+							<label>Type:</label>
+							<select class="select_ingredient_type" required>
+								<option></option>
+								<?php
+								foreach ($allIngredientTypes as $key => $value) {
+									echo '<option value="' . $key . '">' . $value . '</option>';
+								}
+								?>
+							</select>
+							<label>Ingredient:</label>
+							<select class="select_ingredient" required>
+								<option></option>
+							</select>
+							<button class="remove_ingredient_row_button">Remove</button>
+						</div>
+					
 					</div>
-					<div class="ingredient_row">
-						<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
-						<label>Unit:</label>
-						<select required>
-							<option></option>
-							<?php
-							foreach ($allMeasurements as $key => $value) {
-								echo '<option value="' . $key . '">' . $value . '</option>';
-							}
-							?>
-						</select>
-						<label>Type:</label>
-						<select class="select_ingredient_type" required>
-							<option></option>
-							<?php
-							foreach ($allIngredientTypes as $key => $value) {
-								echo '<option value="' . $key . '">' . $value . '</option>';
-							}
-							?>
-						</select>
-						<label>Ingredient:</label>
-						<select class="select_ingredient" required>
-							<option></option>
-						</select>
-						<button class="remove_ingredient_row_button">Remove</button>
-					</div>
-					<div class="ingredient_row">
-						<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
-						<label>Unit:</label>
-						<select required>
-							<option></option>
-							<?php
-							foreach ($allMeasurements as $key => $value) {
-								echo '<option value="' . $key . '">' . $value . '</option>';
-							}
-							?>
-						</select>
-						<label>Type:</label>
-						<select class="select_ingredient_type" required>
-							<option></option>
-							<?php
-							foreach ($allIngredientTypes as $key => $value) {
-								echo '<option value="' . $key . '">' . $value . '</option>';
-							}
-							?>
-						</select>
-						<label>Ingredient:</label>
-						<select class="select_ingredient" required>
-							<option></option>
-						</select>
-						<button class="remove_ingredient_row_button">Remove</button>
-					</div>
+					
 					<button id="add_ingredient_button">Add Ingredient</button>
 				</div>
 				
@@ -573,10 +583,14 @@ function cmsSubmitRecipeActionOne(e) {
 	addEquipmentButton.addEventListener('click', function(e) { prepareEquipmentRow(e); }, false);
 	addIngredientButton.addEventListener('click', function(e) { prepareIngredientRow(e); }, false);
 	addStepButton.addEventListener('click', function(e) { addStepRow(e); }, false);
-	for (var i = 0; i < removeEquipmentRowButtons.length; i++) { removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false); }
-	for (var i = 0; i < removeIngredientRowButtons.length; i++) { removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false); }
-	//for (var i = 0; i < removeEquipmentRowButtons.length; i++) { removeEquipmentRowButtons[i].addEventListener('blur', function(e) { stopBlurs(e); }, {once: true}); }
-	//for (var i = 0; i < removeIngredientRowButtons.length; i++) { removeIngredientRowButtons[i].addEventListener('blur', function(e) { stopBlurs(e); }, {once: true}); }
+	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
+		removeEquipmentRowButtons[i].className += " has_remove";
+		removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
+	}
+	for (var i = 0; i < removeIngredientRowButtons.length; i++) {
+		removeIngredientRowButtons[i].className += " has_remove";
+		removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false);
+	}
 	for (var i = 0; i < removeStepRowButtons.length; i++) { removeStepRowButtons[i].addEventListener('click', function(e) { removeStepRow(e); }, false); }
 	//e.preventDefault();
 	//e.stopPropagation();
@@ -610,19 +624,19 @@ function matchEquipmentToType(e) {
 	var s2 = sC[0];
 	s2.innerHTML = "";
 	if (s1.value == "2") {
-		alert("2");
-		var equipmentOptionArray = <?php echo json_encode($allPreparingEquipment) ?>;
+		var equipmentOptionValues = <?php echo json_encode(array_keys($allPreparingEquipment)) ?>;
+		var equipmentOptionText = <?php echo json_encode(array_values($allPreparingEquipment)) ?>;
 	} else if (s1.value == "3") {
-		alert("3");
-		var equipmentOptionArray = <?php echo json_encode($allCookingEquipment) ?>;
+		var equipmentOptionValues = <?php echo json_encode(array_keys($allCookingEquipment)) ?>;
+		var equipmentOptionText = <?php echo json_encode(array_values($allCookingEquipment)) ?>;
 	}
-	for (var option in equipmentOptionArray) {
-		var valueFill = option;
-		var textFill = equipmentOptionArray[option];
-		var newOption = document.createElement("option");
-		newOption.value = valueFill;
-		newOption.innerHTML = textFill;
-		s2.options.add(newOption);
+	if (typeof equipmentOptionValues !== 'undefined') {
+		for (var i = 0; i < equipmentOptionValues.length; i++) {
+			var newOption = document.createElement("option");
+			newOption.value = equipmentOptionValues[i];
+			newOption.innerHTML = equipmentOptionText[i];
+			s2.options.add(newOption);
+		}
 	}
 	e.preventDefault();
 	e.stopPropagation();
@@ -705,11 +719,13 @@ function matchIngredientToType(e) {
 		var ingredientOptionValues = <?php echo json_encode(array_keys($allProduct)) ?>;
 		var ingredientOptionText = <?php echo json_encode(array_values($allProduct)) ?>;
 	}
-	for (var i = 0; i < ingredientOptionValues.length; i++) {
-		var newOption = document.createElement("option");
-		newOption.value = ingredientOptionValues[i];
-		newOption.innerHTML = ingredientOptionText[i];
-		s2.options.add(newOption);
+	if (typeof equipmentOptionValues !== 'undefined') {
+		for (var i = 0; i < ingredientOptionValues.length; i++) {
+			var newOption = document.createElement("option");
+			newOption.value = ingredientOptionValues[i];
+			newOption.innerHTML = ingredientOptionText[i];
+			s2.options.add(newOption);
+		}
 	}
 	e.preventDefault();
 	e.stopPropagation();
@@ -731,28 +747,22 @@ function getJSON(url, callback) {
 
 
 function constructEquipmentRow(xhttp) {
-	var equipmentDiv = document.getElementById('equipment_div');
-	var addEquipmentButton = document.getElementById('add_equipment_button');
-	var newEquipmentRow = document.createElement("div");
-	
-	newEquipmentRow.setAttribute("class", "equipment_row");
-	equipmentDiv.insertBefore(newEquipmentRow, addEquipmentButton);
-	newEquipmentRow.innerHTML = xhttp.responseText;
+	var equipmentDiv = document.getElementById('equipment_rows_container');
+	equipmentDiv.insertAdjacentHTML('beforeend', xhttp.responseText);
 }
 
 function activateEquipmentRow() {
-	var equipmentDiv = document.getElementById('equipment_div');
+	var equipmentDiv = document.getElementById('equipment_rows_container');
 	var selectEquipmentType = equipmentDiv.getElementsByClassName('select_equipment_type');
 	var removeEquipmentRowButtons = equipmentDiv.getElementsByClassName('remove_equipment_row_button');
 	
-	for (var i = 0; i < selectEquipmentType.length; i++) { selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false); }
+	for (var i = 0; i < selectEquipmentType.length; i++) {
+		selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
+	}
 	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
-		removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
-		/*
-		if (it doesnt already have the event listener attached (you could give it a data-attribute to flag it as attached or not)) { this would stop the extra handlers from being attached, but it wouldn't solve the issue of the last one not having any
+		if (!removeEquipmentRowButtons[i].classList.contains('has_remove')) {
 			removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
 		}
-		*/
 	}
 }
 
@@ -766,22 +776,23 @@ function prepareEquipmentRow(e) {
 
 
 function constructIngredientRow(xhttp) {
-	var ingredientsDiv = document.getElementById('ingredients_div');
-	var addIngredientButton = document.getElementById('add_ingredient_button');
-	var newIngredientRow = document.createElement("div");
-	
-	newIngredientRow.setAttribute("class", "ingredient_row");
-	ingredientsDiv.insertBefore(newIngredientRow, addIngredientButton);
-	newIngredientRow.innerHTML = xhttp.responseText;
+	var ingredientDiv = document.getElementById('ingredient_rows_container');
+	ingredientDiv.insertAdjacentHTML('beforeend', xhttp.responseText);
 }
 
 function activateIngredientRow() {
-	var ingredientsDiv = document.getElementById('ingredients_div');
+	var ingredientsDiv = document.getElementById('ingredient_rows_container');
 	var selectIngredientType = ingredientsDiv.getElementsByClassName('select_ingredient_type');
 	var removeIngredientRowButtons = ingredientsDiv.getElementsByClassName('remove_ingredient_row_button');
 	
-	for (var i = 0; i < selectIngredientType.length; i++) { selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false); }
-	for (var i = 0; i < removeIngredientRowButtons.length; i++) { removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false); }
+	for (var i = 0; i < selectIngredientType.length; i++) {
+		selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
+	}
+	for (var i = 0; i < removeIngredientRowButtons.length; i++) {
+		if (!removeIngredientRowButtons[i].classList.contains('has_remove')) {
+			removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false);
+		}
+	}
 }
 
 function prepareIngredientRow(e) {
@@ -821,8 +832,9 @@ function addStepRow(e) {
 function removeEquipmentRow(e) {
 	var clicked = e.target;
 	var divToRemove = clicked.parentNode;
-	var stepsDiv = document.getElementById('equipment_div');
+	var stepsDiv = document.getElementById('equipment_rows_container');
 	
+	//clicked.removeEventListener('click', removeEquipmentRow);
 	stepsDiv.removeChild(divToRemove);
 	//clicked = null;
 	//divToRemove = null;
@@ -833,8 +845,9 @@ function removeEquipmentRow(e) {
 function removeIngredientRow(e) {
 	var clicked = e.target;
 	var divToRemove = clicked.parentNode;
-	var stepsDiv = document.getElementById('ingredients_div');
+	var stepsDiv = document.getElementById('ingredient_rows_container');
 	
+	//clicked.removeEventListener('click', removeIngredientRow);
 	stepsDiv.removeChild(divToRemove);
 	//clicked = null;
 	//divToRemove = null;
@@ -847,11 +860,23 @@ function removeStepRow(e) {
 	var divToRemove = clicked.parentNode;
 	var stepsDiv = document.getElementById('steps_div');
 	
+	//clicked.removeEventListener('click', removeStepRow);
 	stepsDiv.removeChild(divToRemove);
 	e.preventDefault();
 	e.stopPropagation();
 }
 
+
+/*
+function preventEquipmentBug(e) {
+	var clicked = e.target;
+	clicked.removeEventListener 
+}
+
+function preventIngredientBug(e) {
+	
+}
+*/
 
 
 window.addEventListener("load", function() { cmsSubmitRecipeActionOne(); }, false);
