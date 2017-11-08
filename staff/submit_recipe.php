@@ -719,7 +719,14 @@ function matchIngredientToType(e) {
 		var ingredientOptionValues = <?php echo json_encode(array_keys($allProduct)) ?>;
 		var ingredientOptionText = <?php echo json_encode(array_values($allProduct)) ?>;
 	}
-	if (typeof equipmentOptionValues !== 'undefined') {
+	for (var i = 0; i < ingredientOptionValues.length; i++) {
+		var newOption = document.createElement("option");
+		newOption.value = ingredientOptionValues[i];
+		newOption.innerHTML = ingredientOptionText[i];
+		s2.options.add(newOption);
+	}
+	/*
+	if (typeof equipmentOptionValues !== 'undefined') { // what?
 		for (var i = 0; i < ingredientOptionValues.length; i++) {
 			var newOption = document.createElement("option");
 			newOption.value = ingredientOptionValues[i];
@@ -727,6 +734,7 @@ function matchIngredientToType(e) {
 			s2.options.add(newOption);
 		}
 	}
+	*/
 	e.preventDefault();
 	e.stopPropagation();
 }
@@ -755,20 +763,23 @@ function activateEquipmentRow() {
 	var equipmentDiv = document.getElementById('equipment_rows_container');
 	var selectEquipmentType = equipmentDiv.getElementsByClassName('select_equipment_type');
 	var removeEquipmentRowButtons = equipmentDiv.getElementsByClassName('remove_equipment_row_button');
-	
+	/*
 	for (var i = 0; i < selectEquipmentType.length; i++) {
 		selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
 	}
+	*/
 	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
-		if (!removeEquipmentRowButtons[i].classList.contains('has_remove')) {
-			removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
+		var button = removeEquipmentRowButtons[i];
+		if ((button.classList.contains('has_remove')) !== true) {
+			button.className += " has_remove";
+			button.addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
 		}
 	}
 }
 
 function prepareEquipmentRow(e) {
 	getJSON('recipes/new_equipment_row.php', constructEquipmentRow);
-	activateEquipmentRow();
+	setTimeout(function() { activateEquipmentRow(); }, 500);  // horrible practice? ... it works for now at least
 	e.preventDefault();
 	e.stopPropagation();
 }
@@ -784,20 +795,23 @@ function activateIngredientRow() {
 	var ingredientsDiv = document.getElementById('ingredient_rows_container');
 	var selectIngredientType = ingredientsDiv.getElementsByClassName('select_ingredient_type');
 	var removeIngredientRowButtons = ingredientsDiv.getElementsByClassName('remove_ingredient_row_button');
-	
+	/*
 	for (var i = 0; i < selectIngredientType.length; i++) {
 		selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
 	}
+	*/
 	for (var i = 0; i < removeIngredientRowButtons.length; i++) {
-		if (!removeIngredientRowButtons[i].classList.contains('has_remove')) {
-			removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false);
+		var button = removeIngredientRowButtons[i];
+		if ((button.classList.contains('has_remove')) !== true) {
+			button.className += " has_remove";
+			button.addEventListener('click', function(e) { removeIngredientRow(e); }, false);
 		}
 	}
 }
 
 function prepareIngredientRow(e) {
 	getJSON('recipes/new_ingredient_row.php', constructIngredientRow);
-	activateIngredientRow();
+	setTimeout(function() { activateIngredientRow(); }, 500);  // horrible practice? ... it works for now at least
 	e.preventDefault();
 	e.stopPropagation();
 }
