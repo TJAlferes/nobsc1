@@ -1,6 +1,6 @@
 <div class="equipment_row">
 	<label>Amount:</label>
-	<select required>
+	<select class="select_amount" required>
 		<option></option>
 		<option value="1">1</option>
 		<option value="2">2</option>
