@@ -132,7 +132,9 @@ if (!isset($equipmentIDs)) {
 $equipmentIDsList = implode(", ", $equipmentIDs);
 */
 
-// process image
+
+
+// process the four images
 function uploadRecipeImage() {
 	
 	// 1. setup
@@ -141,40 +143,35 @@ function uploadRecipeImage() {
 	$imageDirectory = 'images/recipes/';
 	$imagePath = $imageDirectory . $imageName;
 	
-	
-	// 2. check if image type is allowed
+	// 2. check if the files use an allowed image type
 	$imageCheck = getimagesize($temporaryName);
 	$allowedImageTypes = array(IMAGETYPE_JPEG);
 	if (!in_array($imageCheck[2], $allowedImageTypes)) {
 		exec('submitted_image -bi ' . $temporaryName, $imageCheck);
 	}
 	
-	
-	// 3. check image dimensions
+	// 3. check dimensions of images
 	$imageWidth = $imageCheck[0];
 	$imageHeight = $imageCheck[1];
 	if (($imageWidth != "480") && ($imageHeight != "320")) {
 		$feedback = '<div class="image_feedback">Image dimensions must be 480 pixels wide and 320 pixels high.</div>';
 	}
 	
-	
-	// 4. check file size
+	// 4. check file sizes
 	$maxFileSize = 1000000;  // 1MB
 	if (filesize($temporaryName) > $maxFileSize) {
 		$feedback = '<div class="image_feedback">Image file size is too large.</div>';
 	}
 	
-	
-	// 5. check if file already exists
+	// 5. check if the files already exist
 	$targetDirectory = 'images/recipes/';
 	$targetFile = $targetDirectory . basename($_FILES['submitted_image']['name']);
 	if (file_exists($targetFile)) {
 		$feedback = '<div class="image_feedback">Image file already exists.</div>';
 		// die(); ?
 	}	
-
-
-	// 6. store the image file in the images/recipes directory
+	
+	// 6. store the 4 image files in the images/recipes directory
 	if (move_uploaded_file($temporaryName, $targetFile)) {
 		chmod($targetFile, 0644);
 		$feedback = '<div class="image_feedback">Image uploaded!</div>';
@@ -182,8 +179,7 @@ function uploadRecipeImage() {
 		$feedback = '<div class="image_feedback">There was a problem storing your image. Try again?</div>';
 	}
 	
-	
-	// 7. make a copy of the image file, resized and name appended with a "-t", store in the images/irecipes/thumbs directory
+	// 7. make a copy of the recipe_image file, resized and name appended with a "-t", store in the images/irecipes/thumbs directory
 	$thumbDirectory = 'images/recipes/thumbs/';
 	$thumbName = substr_replace($imageName, '-t.jpg', -4);
 	$thumbPath = $thumbDirectory . $thumbName;
@@ -195,29 +191,39 @@ function uploadRecipeImage() {
 	imagejpeg($thumb, $thumbPath, 100);
 	imagedestroy($thumb);
 	
-	
 	// 8. finally, make database insertions
 	$recipeTypeID = $_POST['recipe_type_id'];
 	$cuisineID = $_POST['cuisine_id'];
 	$recipeTitle = $_POST['recipe_title'];  // sanitize/validate
 	$recipeDescription = $_POST['recipe_description'];  // sanitize/validate
-	$equipmentIDs;
-	$ingredientIDs;
+	
+	$recipeImage = '';
+	$recipeEquipmentImage = '';
+	$recipeIngredientsImage = '';
+	$recipeCookingImage = '';
+	
+	$equipment[];
+	$ingredients[];
+	$steps[];
+	
+	
 	
 	global $conn;
 	
-	// nobsc_recipes
+	
+	
+	// nobsc_recipes insertions
 	$sql = 'INSERT INTO nobsc_recipes (recipe_type_id, cuisine_id, recipe_title, recipe_description, recipe_image, recipe_equipment_image, recipe_ingredients_image, recipe_cooking_image)
-			VALUES (:typeID, :cuiID :, :title, :desc, :image, :eImage, :iImage, :cImage)';
+			VALUES (:recipeTypeID, :cuisineID :, :recipeTitle, :recipeDescription, :recipeImage, :recipeEquipmentImage, :recipeIngredientsImage, :recipeCookingImage)';
 	$stmt = $conn->prepare($sql);
-	$stmt->execute([':typeID'  => $recipeTypeID,
-					':cuiID'   => $cuisineID,
-					':title'   => $recipeTitle,
-					':desc'    => $recipeDescription,
-					':image'   => recipeImage,
-					':eImage' => $recipeEquipmentImage,
-					':iImage' => $recipeIngredientsImage,
-					':cImage' => $recipeCookingImage]);
+	$stmt->execute([':recipeTypeID'           => $recipeTypeID,
+					':cuisineID'              => $cuisineID,
+					':recipeTitle'            => $recipeTitle,
+					':recipeDescription'      => $recipeDescription,
+					':recipeImage'            => $recipeImage,
+					':recipeEquipmentImage'   => $recipeEquipmentImage,
+					':recipeIngredientsImage' => $recipeIngredientsImage,
+					':recipeCookingImage'     => $recipeCookingImage]);
 	
 	
 	
@@ -226,52 +232,99 @@ function uploadRecipeImage() {
 	
 	
 	
-	// nobsc_recipe_equipment
+	// nobsc_recipe_equipment insertions
 	if (count($equipmentIDs) > 1) {
-		$inNamed = "";
-		$parameters = [];
-		foreach ($checkedTypes as $j => $chTy) {
-			$key = ":id" . $j;
-			$inNamed .= "$key, ";
-			$parameters[$key] = $chTy;
-		}
-		$inNamedSet = rtrim($inNamed, ", ");
 		
-		// for each,
-		// create :recipeID string and bindValue :recipeID to $recipeID
-		// create :equipmentIDX string and bindValue :equipmentIDX to $equipmentIDs[X]
-		// create :amount string and bindValue(PDO::PARAM_INT) :amountX to $amounts[X]
+		// repeat this for the ingredients and steps, get values from JS, make sticky/foolproof, then move on to planner
+		
+		$allRows = "";
+		$parametersJ = [];
+		$parametersK = [];
+		$equipmentIDsValues = array_values($equipmentIDs);
+		$selectAmountsValues = array_values($selectAmounts);
+		
+		for ($i = 0; $i < $changeMe; $i++) {
+			$j = ":equipmentID" . $i;
+			$k = "amount" . $i;
+			$singleRow = "(:recipeID, $j, $k), ";
+			$allRows .= $singleRow;
+			$parametersJ[$j] = $equipmentIDs[$i];
+			$parametersK[$k] = $selectAmounts[$i];
+		}
+		$allRowsCleaned = $allRows;  // minus the last 2 characters (", ") (comma and space)
 		
 		$sql = "INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount)
-			VALUES " . $inNamedSet . "";
+				VALUES " . $allRowsCleaned;
 		$stmt = $conn->prepare($sql);
-		foreach ($parameters as $k => $chType) {
-			$stmt->bindValue($k, $chType);
+		
+		foreach ($parametersJ as $j => $chType) {
+			$stmt->bindValue($j, $chType, PDO::PARAM_INT);
 		}
+		foreach ($parametersK as $k => $chType) {
+			$stmt->bindValue($k, $chType, PDO::PARAM_INT);
+		}
+		
 		$stmt->execute();
+		
+		
 	} elseif (count($equipmentIDs) == 1) {
 		$sql = 'INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount)
-				VALUES (:recipeID, :step_number, :step_text)'; // this needs to be built dynamically depending on how many equipment rows there are, and be sure the equipment are validated first so there are no errors here
+				VALUES (:recipeID, :equipmentID, :amount)'; // this needs to be built dynamically depending on how many equipment rows there are, and be sure the equipment are validated first so there are no errors here
 		$stmt = $conn->prepare($sql);
-		$stmt->execute([':recipeID' => $recipeID]); // this needs to be built dynamically
+		$stmt->execute([':recipeID'    => $recipeID,
+						':equipmentID' => $equipmentID,
+						':amount'      => $selectAmount]); // this needs to be built dynamically
 	}
 	
 	
-	/*
-	// nobsc_recipe_ingredients
-	$sql = 'INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount)
-			VALUES (:recipeID, :step_number, :step_text)'; // this needs to be built dynamically depending on how many ingredient rows there are, and be sure the ingredients are validated first so there are no errors here
-	$stmt = $conn->prepare($sql);
-	$stmt->execute([':recipeID' => $recipeID]); // this needs to be built dynamically
+	
+	// nobsc_recipe_ingredients insertions
+	if (count($ingredientIDs) > 1) {
+		$whatEver = "some dynamically built string, something like:
+					(:recipeID, :ingredientID0, :measurementID0, :amount0),
+					(:recipeID, :ingredientID1, :measurementID1, :amount1),
+					(:recipeID, :ingredientID2, :measurementID2, :amount2),
+					(:recipeID, :ingredientID3, :measurementID3, :amount3)";
+		$sql = "INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount)
+				VALUES " . $whatEver;
+		$stmt = $conn->prepare($sql);	
+		foreach ($parameters as $k => $chType) {
+			$stmt->bindValue($k, $chType, PDO::PARAM_INT);
+		}
+	} elseif (count($ingredientIDs) == 1) {
+		$sql = 'INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount)
+				VALUES (:recipeID, :ingredientID, :measurementID, :amount)'; // this needs to be built dynamically depending on how many ingredient rows there are, and be sure the ingredients are validated first so there are no errors here
+		$stmt = $conn->prepare($sql);
+		$stmt->execute([':recipeID'      => $recipeID,
+						':ingredientID'  => $ingredientID,
+						':measurementID' => $measurementID,
+						':amount'        => $manualAmount]); // this needs to be built dynamically
+	}
 	
 	
 	
-	// nobsc_steps
-	$sql = 'INSERT INTO nobsc_steps (recipe_id, step_number, step_text)
-			VALUES (:recipeID, :step_number, :step_text)'; // this needs to be built dynamically depending on how many steps there are, and be sure the steps are validated first so there are no errors here
-	$stmt = $conn->prepare($sql);
-	$stmt->execute([':recipeID' => $recipeID]); // this needs to be built dynamically
-	*/
+	// nobsc_steps insertions
+	if (count($stepIDs) > 1) {
+		$whatEver = "some dynamically built string, something like:
+					(:recipeID, :stepNumber0, :stepText0),
+					(:recipeID, :stepNumber1, :stepText1),
+					(:recipeID, :stepNumber2, :stepText2),
+					(:recipeID, :stepNumber3, :stepText3)";
+		$sql = "INSERT INTO nobsc_steps (recipe_id, step_number, step_text)
+				VALUES " . $whatEver;
+		$stmt = $conn->prepare($sql);	
+		foreach ($parameters as $k => $chType) {
+			$stmt->bindValue($k, $chType, PDO::PARAM_INT);
+		}
+	} elseif (count($stepIDs) == 1) {
+		$sql = 'INSERT INTO nobsc_steps (recipe_id, step_number, step_text)
+				VALUES (:recipeID, :stepNumber, :stepText)'; // this needs to be built dynamically depending on how many steps there are, and be sure the steps are validated first so there are no errors here
+		$stmt = $conn->prepare($sql);
+		$stmt->execute([':recipeID'   => $recipeID,
+						':stepNumber' => $stepNumber,
+						':stepText'   => $stepText]); // this needs to be built dynamically
+	}
+	
 }
 
 if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent submission errors... submit using ajax?
@@ -376,7 +429,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						
 						<div class="equipment_row">
 							<label>Amount:</label>
-							<select required>
+							<select class="select_amount" required>
 								<option></option>
 								<option value="1">1</option>
 								<option value="2">2</option>
@@ -400,7 +453,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						
 						<div class="equipment_row">
 							<label>Amount:</label>
-							<select required>
+							<select class="select_amount" required>
 								<option></option>
 								<option value="1">1</option>
 								<option value="2">2</option>
@@ -424,7 +477,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						
 						<div class="equipment_row">
 							<label>Amount:</label>
-							<select required>
+							<select class="select_amount" required>
 								<option></option>
 								<option value="1">1</option>
 								<option value="2">2</option>
@@ -459,22 +512,12 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<div class="ingredient_row">
 							<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
 							<label>Unit:</label>
-							<select required>
+							<select class="select_unit" required>
 								<option></option>
-								<?php
-								foreach ($allMeasurements as $key => $value) {
-									echo '<option value="' . $key . '">' . $value . '</option>';
-								}
-								?>
 							</select>
 							<label>Type:</label>
 							<select class="select_ingredient_type" required>
 								<option></option>
-								<?php
-								foreach ($allIngredientTypes as $key => $value) {
-									echo '<option value="' . $key . '">' . $value . '</option>';
-								}
-								?>
 							</select>
 							<label>Ingredient:</label>
 							<select class="select_ingredient" required>
@@ -486,22 +529,12 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<div class="ingredient_row">
 							<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
 							<label>Unit:</label>
-							<select required>
+							<select class="select_unit" required>
 								<option></option>
-								<?php
-								foreach ($allMeasurements as $key => $value) {
-									echo '<option value="' . $key . '">' . $value . '</option>';
-								}
-								?>
 							</select>
 							<label>Type:</label>
 							<select class="select_ingredient_type" required>
 								<option></option>
-								<?php
-								foreach ($allIngredientTypes as $key => $value) {
-									echo '<option value="' . $key . '">' . $value . '</option>';
-								}
-								?>
 							</select>
 							<label>Ingredient:</label>
 							<select class="select_ingredient" required>
@@ -513,22 +546,12 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 						<div class="ingredient_row">
 							<label>Amount:</label><input class="manual_amount" type="number" step="any" min="0.125" max="9999" required>
 							<label>Unit:</label>
-							<select required>
+							<select class="select_unit" required>
 								<option></option>
-								<?php
-								foreach ($allMeasurements as $key => $value) {
-									echo '<option value="' . $key . '">' . $value . '</option>';
-								}
-								?>
 							</select>
 							<label>Type:</label>
 							<select class="select_ingredient_type" required>
 								<option></option>
-								<?php
-								foreach ($allIngredientTypes as $key => $value) {
-									echo '<option value="' . $key . '">' . $value . '</option>';
-								}
-								?>
 							</select>
 							<label>Ingredient:</label>
 							<select class="select_ingredient" required>
@@ -546,13 +569,13 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent sub
 				<div class="recipe_additions" id="steps_div">
 					<p class="red_style">11. Recipe Directions</p>
 					<div class="step_row">
-						<label>Step:</label><input type="text"><button class="remove_step_row_button">Remove</button>
+						<label>Step:</label><input type="text" maxlength="250" class="manual_step" required><button class="remove_step_row_button">Remove</button>
 					</div>
 					<div class="step_row">
-						<label>Step:</label><input type="text"><button class="remove_step_row_button">Remove</button>
+						<label>Step:</label><input type="text" maxlength="250" class="manual_step" required><button class="remove_step_row_button">Remove</button>
 					</div>
 					<div class="step_row">
-						<label>Step:</label><input type="text"><button class="remove_step_row_button">Remove</button>
+						<label>Step:</label><input type="text" maxlength="250" class="manual_step" required><button class="remove_step_row_button">Remove</button>
 					</div>
 					<button id="add_step_button">Add Step</button>
 				</div>
@@ -578,8 +601,14 @@ function cmsSubmitRecipeActionOne(e) {
 	var removeStepRowButtons = document.getElementsByClassName('remove_step_row_button');
 	
 	for (var i = 0; i < imageToSizeCheck.length; i++) { imageToSizeCheck[i].addEventListener('click', function(e) { clientSideEnforceImageSize(e); }, false); }
-	for (var i = 0; i < selectEquipmentType.length; i++) { selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false); }
-	for (var i = 0; i < selectIngredientType.length; i++) { selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false); }
+	for (var i = 0; i < selectEquipmentType.length; i++) {
+		selectEquipmentType[i].className += " has_match";
+		selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
+	}
+	for (var i = 0; i < selectIngredientType.length; i++) {
+		selectEquipmentType[i].className += " has_match";
+		selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
+	}
 	addEquipmentButton.addEventListener('click', function(e) { prepareEquipmentRow(e); }, false);
 	addIngredientButton.addEventListener('click', function(e) { prepareIngredientRow(e); }, false);
 	addStepButton.addEventListener('click', function(e) { addStepRow(e); }, false);
@@ -592,6 +621,7 @@ function cmsSubmitRecipeActionOne(e) {
 		removeIngredientRowButtons[i].addEventListener('click', function(e) { removeIngredientRow(e); }, false);
 	}
 	for (var i = 0; i < removeStepRowButtons.length; i++) { removeStepRowButtons[i].addEventListener('click', function(e) { removeStepRow(e); }, false); }
+	populateIngredientUnitsAndTypes();
 	//e.preventDefault();
 	//e.stopPropagation();
 }
@@ -614,6 +644,46 @@ function clientSideEnforceImageSize(e) {
 		}
     }
 	reader.readAsDataURL(this.files[0]);  // document this
+}
+
+
+
+function populateIngredientUnitsAndTypes() {
+	var container = document.getElementById("ingredient_rows_container");
+	var selectUnits = container.getElementsByClassName("select_unit");
+	var selectIngredientTypes = container.getElementsByClassName("select_ingredient_type");
+	var unitOptionValues = <?php echo json_encode(array_keys($allMeasurements)) ?>;
+	var unitOptionText = <?php echo json_encode(array_values($allMeasurements)) ?>;
+	var ingredientTypeOptionValues = <?php echo json_encode(array_keys($allIngredientTypes)) ?>;
+	var ingredientTypeOptionText = <?php echo json_encode(array_values($allIngredientTypes)) ?>;
+	
+	for (var i = 0; i < selectUnits.length; i++) {
+		var list = selectUnits[i];
+		if ((list.classList.contains('populated')) !== true) {
+			list.className += " populated";
+			list.innerHTML = "";
+			for (var j = 0; j < unitOptionValues.length; j++) {
+				var newOption = document.createElement("option");
+				newOption.value = unitOptionValues[j];
+				newOption.innerHTML = unitOptionText[j];
+				selectUnits[i].options.add(newOption);
+			}
+		}
+	}
+	
+	for (var i = 0; i < selectIngredientTypes.length; i++) {
+		var list = selectIngredientTypes[i];
+		if ((list.classList.contains('populated')) !== true) {
+			list.className += " populated";
+			list.innerHTML = "";
+			for (var j = 0; j < ingredientTypeOptionValues.length; j++) {
+				var newOption = document.createElement("option");
+				newOption.value = ingredientTypeOptionValues[j];
+				newOption.innerHTML = ingredientTypeOptionText[j];
+				selectIngredientTypes[i].options.add(newOption);
+			}
+		}
+	}
 }
 
 
@@ -763,11 +833,15 @@ function activateEquipmentRow() {
 	var equipmentDiv = document.getElementById('equipment_rows_container');
 	var selectEquipmentType = equipmentDiv.getElementsByClassName('select_equipment_type');
 	var removeEquipmentRowButtons = equipmentDiv.getElementsByClassName('remove_equipment_row_button');
-	/*
+	// activate equipment type filter
 	for (var i = 0; i < selectEquipmentType.length; i++) {
-		selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
+		var typeColumn = selectEquipmentType[i];
+		if ((typeColumn.classList.contains('has_match')) !== true) {
+			typeColumn.className += " has_match";
+			typeColumn.addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
+		}
 	}
-	*/
+	// activate row removability
 	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
 		var button = removeEquipmentRowButtons[i];
 		if ((button.classList.contains('has_remove')) !== true) {
@@ -795,11 +869,15 @@ function activateIngredientRow() {
 	var ingredientsDiv = document.getElementById('ingredient_rows_container');
 	var selectIngredientType = ingredientsDiv.getElementsByClassName('select_ingredient_type');
 	var removeIngredientRowButtons = ingredientsDiv.getElementsByClassName('remove_ingredient_row_button');
-	/*
+	// activate ingredient type filter
 	for (var i = 0; i < selectIngredientType.length; i++) {
-		selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
+		var typeColumn = selectIngredientType[i];
+		if ((typeColumn.classList.contains('has_match')) !== true) {
+			typeColumn.className += " has_match";
+			typeColumn.addEventListener('change', function(e) { matchIngredientToType(e); }, false);
+		}
 	}
-	*/
+	// activate row removability
 	for (var i = 0; i < removeIngredientRowButtons.length; i++) {
 		var button = removeIngredientRowButtons[i];
 		if ((button.classList.contains('has_remove')) !== true) {
@@ -811,7 +889,8 @@ function activateIngredientRow() {
 
 function prepareIngredientRow(e) {
 	getJSON('recipes/new_ingredient_row.php', constructIngredientRow);
-	setTimeout(function() { activateIngredientRow(); }, 500);  // horrible practice? ... it works for now at least
+	setTimeout(function() { activateIngredientRow(); }, 400);  // horrible practice... it works for now at least
+	setTimeout(function() { populateIngredientUnitsAndTypes(); }, 500);  // horrible practice... it works for now at least
 	e.preventDefault();
 	e.stopPropagation();
 }
