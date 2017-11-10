@@ -117,24 +117,9 @@ $sql = 'SELECT ingredient_id, ingredient_name FROM nobsc_ingredients WHERE ingre
 $stmt = $conn->query($sql);
 $allProduct = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-/*
-if (!isset($equipmentIDs)) {
-	$equipmentIDs = [];
-	$sql = 'SELECT ingredient_type_id FROM nobsc_ingredient_types';
-	$stmt = $conn->prepare($sql);
-	$stmt->execute();
-	while (($row = $stmt->fetch()) !== false) {
-		if (isset($_GET['itid' . $row['ingredient_type_id']])) {
-			$equipmentIDs[] = $row['ingredient_type_id'];
-		}
-	}
-}
-$equipmentIDsList = implode(", ", $equipmentIDs);
-*/
 
 
-
-// process the four images
+// process the four images                  *** CHANGE THIS TO RECEIVE POST, and redo/finish validation/feedback/foolproofing ***
 function uploadRecipeImage() {
 	
 	// 1. setup
@@ -143,12 +128,16 @@ function uploadRecipeImage() {
 	$imageDirectory = 'images/recipes/';
 	$imagePath = $imageDirectory . $imageName;
 	
+	
+	
 	// 2. check if the files use an allowed image type
 	$imageCheck = getimagesize($temporaryName);
 	$allowedImageTypes = array(IMAGETYPE_JPEG);
 	if (!in_array($imageCheck[2], $allowedImageTypes)) {
 		exec('submitted_image -bi ' . $temporaryName, $imageCheck);
 	}
+	
+	
 	
 	// 3. check dimensions of images
 	$imageWidth = $imageCheck[0];
@@ -157,11 +146,15 @@ function uploadRecipeImage() {
 		$feedback = '<div class="image_feedback">Image dimensions must be 480 pixels wide and 320 pixels high.</div>';
 	}
 	
+	
+	
 	// 4. check file sizes
 	$maxFileSize = 1000000;  // 1MB
 	if (filesize($temporaryName) > $maxFileSize) {
 		$feedback = '<div class="image_feedback">Image file size is too large.</div>';
 	}
+	
+	
 	
 	// 5. check if the files already exist
 	$targetDirectory = 'images/recipes/';
@@ -171,6 +164,8 @@ function uploadRecipeImage() {
 		// die(); ?
 	}	
 	
+	
+	
 	// 6. store the 4 image files in the images/recipes directory
 	if (move_uploaded_file($temporaryName, $targetFile)) {
 		chmod($targetFile, 0644);
@@ -178,6 +173,8 @@ function uploadRecipeImage() {
 	} else {
 		$feedback = '<div class="image_feedback">There was a problem storing your image. Try again?</div>';
 	}
+	
+	
 	
 	// 7. make a copy of the recipe_image file, resized and name appended with a "-t", store in the images/irecipes/thumbs directory
 	$thumbDirectory = 'images/recipes/thumbs/';
@@ -191,23 +188,32 @@ function uploadRecipeImage() {
 	imagejpeg($thumb, $thumbPath, 100);
 	imagedestroy($thumb);
 	
+	
+	
 	// 8. finally, make database insertions
+	
+	// user input
 	$recipeTypeID = $_POST['recipe_type_id'];
 	$cuisineID = $_POST['cuisine_id'];
-	$recipeTitle = $_POST['recipe_title'];  // sanitize/validate
-	$recipeDescription = $_POST['recipe_description'];  // sanitize/validate
-	
+	$recipeTitle = $_POST['recipe_title'];                            // sanitize/validate!
+	$recipeDescription = $_POST['recipe_description'];                // sanitize/validate!
 	$recipeImage = '';
 	$recipeEquipmentImage = '';
 	$recipeIngredientsImage = '';
 	$recipeCookingImage = '';
+
+	$selectAmounts = json_decode($_POST['selectAmountsJSON'], true);
+	$equipmentIDs = json_decode($_POST['selectEquipmentJSON'], true);
 	
-	$equipment[];
-	$ingredients[];
-	$steps[];
+	$manualAmounts = json_decode($_POST['manualAmountsJSON'], true);  // sanitize/validate!
+	$measurements = json_decode($_POST['selectUnitsJSON'], true);
+	$ingredientIDs = json_decode($_POST['selectIngredientsJSON'], true);
+	
+	$stepTexts = json_decode($_POST['manualStepsJSON'], true);        // sanitize/validate!
 	
 	
 	
+	// get database connection
 	global $conn;
 	
 	
@@ -234,100 +240,121 @@ function uploadRecipeImage() {
 	
 	// nobsc_recipe_equipment insertions
 	if (count($equipmentIDs) > 1) {
-		
-		// repeat this for the ingredients and steps, get values from JS, make sticky/foolproof, then move on to planner
-		
 		$allRows = "";
+		$parametersH = [];
 		$parametersJ = [];
 		$parametersK = [];
 		$equipmentIDsValues = array_values($equipmentIDs);
 		$selectAmountsValues = array_values($selectAmounts);
-		
 		for ($i = 0; $i < $changeMe; $i++) {
+			$h = ":recipeID" . $i;
 			$j = ":equipmentID" . $i;
-			$k = "amount" . $i;
-			$singleRow = "(:recipeID, $j, $k), ";
+			$k = ":amount" . $i;
+			$singleRow = "($h, $j, $k), ";
 			$allRows .= $singleRow;
-			$parametersJ[$j] = $equipmentIDs[$i];
-			$parametersK[$k] = $selectAmounts[$i];
+			$parametersH[$h] = $recipeID;
+			$parametersJ[$j] = $equipmentIDsValues[$i];
+			$parametersK[$k] = $selectAmountsValues[$i];
 		}
-		$allRowsCleaned = $allRows;  // minus the last 2 characters (", ") (comma and space)
+		$allRowsCleaned = substr($allRows, 0, -2);
 		
-		$sql = "INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount)
-				VALUES " . $allRowsCleaned;
+		$sql = "INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES " . $allRowsCleaned;
 		$stmt = $conn->prepare($sql);
-		
-		foreach ($parametersJ as $j => $chType) {
-			$stmt->bindValue($j, $chType, PDO::PARAM_INT);
-		}
-		foreach ($parametersK as $k => $chType) {
-			$stmt->bindValue($k, $chType, PDO::PARAM_INT);
-		}
-		
+		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }
+		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }
+		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }
 		$stmt->execute();
 		
-		
 	} elseif (count($equipmentIDs) == 1) {
-		$sql = 'INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount)
-				VALUES (:recipeID, :equipmentID, :amount)'; // this needs to be built dynamically depending on how many equipment rows there are, and be sure the equipment are validated first so there are no errors here
+		$sql = 'INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES (:recipeID, :equipmentID, :amount)';
 		$stmt = $conn->prepare($sql);
 		$stmt->execute([':recipeID'    => $recipeID,
 						':equipmentID' => $equipmentID,
-						':amount'      => $selectAmount]); // this needs to be built dynamically
+						':amount'      => $selectAmount]);
 	}
 	
 	
 	
 	// nobsc_recipe_ingredients insertions
 	if (count($ingredientIDs) > 1) {
-		$whatEver = "some dynamically built string, something like:
-					(:recipeID, :ingredientID0, :measurementID0, :amount0),
-					(:recipeID, :ingredientID1, :measurementID1, :amount1),
-					(:recipeID, :ingredientID2, :measurementID2, :amount2),
-					(:recipeID, :ingredientID3, :measurementID3, :amount3)";
-		$sql = "INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount)
-				VALUES " . $whatEver;
-		$stmt = $conn->prepare($sql);	
-		foreach ($parameters as $k => $chType) {
-			$stmt->bindValue($k, $chType, PDO::PARAM_INT);
+		$allRows = "";
+		$parametersH = [];
+		$parametersJ = [];
+		$parametersK = [];
+		$parametersM = [];
+		$ingredientIDsValues = array_values($ingredientIDs);
+		$measurementsValues = array_values($measurements);
+		$manualAmountsValues = array_values($manualAmounts);
+		for ($i = 0; $i < $changeMe; $i++) {
+			$h = ":recipeID" . $i;
+			$j = ":ingredientID" . $i;
+			$k = ":measurementID" . $i;
+			$m = ":amount" . $i;
+			$singleRow = "($h, $j, $k, $m), ";
+			$allRows .= $singleRow;
+			$parametersH[$h] = $recipeID;
+			$parametersJ[$j] = $ingredientIDsValues[$i];
+			$parametersK[$k] = $manualAmountsValues[$i];
+			$parametersM[$m] = $measurementsValues[$i];
 		}
+		$allRowsCleaned = substr($allRows, 0, -2);
+		
+		$sql = "INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount) VALUES " . $allRowsCleaned;
+		$stmt = $conn->prepare($sql);
+		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all ingredient_id
+		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all measurement_id
+		foreach ($parametersM as $m => $val) { $stmt->bindValue($m, $val, PDO::PARAM_INT); }  // bind all amount
+		$stmt->execute();
+		
 	} elseif (count($ingredientIDs) == 1) {
-		$sql = 'INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount)
-				VALUES (:recipeID, :ingredientID, :measurementID, :amount)'; // this needs to be built dynamically depending on how many ingredient rows there are, and be sure the ingredients are validated first so there are no errors here
+		$sql = 'INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount) VALUES (:recipeID, :ingredientID, :measurementID, :amount)';
 		$stmt = $conn->prepare($sql);
 		$stmt->execute([':recipeID'      => $recipeID,
 						':ingredientID'  => $ingredientID,
 						':measurementID' => $measurementID,
-						':amount'        => $manualAmount]); // this needs to be built dynamically
+						':amount'        => $manualAmount]);
 	}
 	
 	
 	
 	// nobsc_steps insertions
 	if (count($stepIDs) > 1) {
-		$whatEver = "some dynamically built string, something like:
-					(:recipeID, :stepNumber0, :stepText0),
-					(:recipeID, :stepNumber1, :stepText1),
-					(:recipeID, :stepNumber2, :stepText2),
-					(:recipeID, :stepNumber3, :stepText3)";
-		$sql = "INSERT INTO nobsc_steps (recipe_id, step_number, step_text)
-				VALUES " . $whatEver;
-		$stmt = $conn->prepare($sql);	
-		foreach ($parameters as $k => $chType) {
-			$stmt->bindValue($k, $chType, PDO::PARAM_INT);
+		$allRows = "";
+		$parametersH = [];
+		$parametersJ = [];
+		$parametersK = [];
+		$stepTextsValues = array_values($stepTexts);
+		for ($i = 0; $i < $changeMe; $i++) {
+			$h = ":recipeID" . $i;
+			$j = ":stepNumber" . $i;
+			$k = ":stepText" . $i;
+			$singleRow = "($h, $j, $k), ";
+			$allRows .= $singleRow;
+			$parametersH[$h] = $recipeID;
+			$parametersJ[$j] = $i;
+			$parametersK[$k] = $stepTextsValues[$i];
 		}
+		$allRowsCleaned = substr($allRows, 0, -2);
+		
+		$sql = "INSERT INTO nobsc_steps (recipe_id, step_number, step_text) VALUES " . $allRowsCleaned;
+		$stmt = $conn->prepare($sql);	
+		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all step_number
+		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all step_text
+		$stmt->execute();
+		
 	} elseif (count($stepIDs) == 1) {
-		$sql = 'INSERT INTO nobsc_steps (recipe_id, step_number, step_text)
-				VALUES (:recipeID, :stepNumber, :stepText)'; // this needs to be built dynamically depending on how many steps there are, and be sure the steps are validated first so there are no errors here
+		$sql = 'INSERT INTO nobsc_steps (recipe_id, step_number, step_text) VALUES (:recipeID, :stepNumber, :stepText)';
 		$stmt = $conn->prepare($sql);
 		$stmt->execute([':recipeID'   => $recipeID,
 						':stepNumber' => $stepNumber,
-						':stepText'   => $stepText]); // this needs to be built dynamically
+						':stepText'   => $stepText]);
 	}
 	
 }
 
-if (!empty($_FILES)) { echo uploadRecipeImage(); } // change this to prevent submission errors... submit using ajax?
+if (!empty($_FILES)) { echo uploadRecipeImage(); } // delete this to prevent submission errors... submit using ajax
 ?>
 <html lang="en">
 <head>
@@ -822,6 +849,12 @@ function getJSON(url, callback) {
 	xhttp.send();
 }
 
+function postJSON(data) {
+	var xhttp = new XMLHttpRequest();
+	xhttp.open("POST", "", true);
+	xhttp.send(data);
+}
+
 
 
 function constructEquipmentRow(xhttp) {
@@ -960,16 +993,69 @@ function removeStepRow(e) {
 }
 
 
-/*
-function preventEquipmentBug(e) {
-	var clicked = e.target;
-	clicked.removeEventListener 
-}
 
-function preventIngredientBug(e) {
+function postToServer() {
+	
+	// validate this with an if statement?
+	
+	// 1. prepare equipment amounts
+	var getSelectAmounts = document.getElementsByClass['select_amount'];
+	var selectAmounts = [];
+	for (var i = 0; i < getSelectAmounts.length; i++) {
+		selectAmounts[] = getSelectAmounts[i].options[getSelectAmounts.selectedIndex].value;
+	}
+	var selectAmountsJSON = JSON.stringify(selectAmounts);
+	// 2. prepare equipment ids
+	var getSelectEquipment = document.getElementsByClass['select_equipment'];
+	var selectEquipment = [];
+	for (var i = 0; i < getSelectEquipment.length; i++) {
+		selectEquipment[] = getSelectEquipment[i].options[getSelectEquipment.selectedIndex].value;
+	}
+	var selectEquipmentJSON = JSON.stringify(selectEquipment);
+	
+	
+	// 3. prepare ingredient amounts
+	var getManualAmounts = document.getElementsByClass['manual_amount'];
+	var manualAmounts = [];
+	for (var i = 0; i < getManualAmounts.length; i++) {
+		manualAmounts[] = getManualAmounts[i].value;
+	}
+	var manualAmountsJSON = JSON.stringify(manualAmounts);
+	// 4. prepare measurement ids
+	var getSelectUnits = document.getElementsByClass['select_unit'];
+	var selectUnits = [];
+	for (var i = 0; i < getSelectUnits.length; i++) {
+		selectUnits[] = getSelectUnits[i].options[getSelectUnits.selectedIndex].value;
+	}
+	var selectUnitsJSON = JSON.stringify(selectUnits);
+	// 5. prepare ingredient ids
+	var getSelectIngredients = document.getElementsByClass['select_ingredient'];
+	var selectIngredients = [];
+	for (var i = 0; i < getSelectIngredients.length; i++) {
+		selectIngredients[] = getSelectIngredients[i].options[getSelectIngredients.selectedIndex].value;
+	}
+	var selectIngredientsJSON = JSON.stringify(selectIngredients);
+	
+	
+	// 6. prepare step texts
+	var getManualSteps = document.getElementsByClass['manual_step'];
+	var manualSteps = [];
+	for (var i = 0; i < getManualSteps.length; i++) {
+		manualSteps[] = getManualSteps[i].value;
+	}
+	var manualStepsJSON = JSON.stringify(manualSteps);
+	
+	
+	// POST prepared strings to server (These need some sort of status, success, and error feedback)
+	postJSON(selectAmountsJSON);
+	postJSON(selectEquipmentJSON);
+	postJSON(manualAmountsJSON);
+	postJSON(selectUnitsJSON);
+	postJSON(selectIngredientsJSON);
+	postJSON(manualStepsJSON);
 	
 }
-*/
+
 
 
 window.addEventListener("load", function() { cmsSubmitRecipeActionOne(); }, false);
