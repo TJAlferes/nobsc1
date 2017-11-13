@@ -119,34 +119,69 @@ $allProduct = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 
 
-if (isset($_POST) && !empty($_FILES['image']['name'])) {
-	
-}
-
-// process the four images                  *** CHANGE THIS TO RECEIVE POST, and redo/finish validation/feedback/foolproofing ***
-function uploadRecipeImage() {
+// process user input                 *** redo/finish validation/feedback/foolproofing ***
+if (isset($_POST) && !empty($_FILES['submitted_image']['name']) && !empty($_FILES['submitted_equipment_image']['name']) && !empty($_FILES['submitted_ingredients_image']['name']) && !empty($_FILES['submitted_cooking_image']['name'])) {
 	
 	// 1. setup
-	$temporaryName = $_FILES['submitted_image']['tmp_name'];
+	$temporaryNameOne = $_FILES['submitted_image']['tmp_name'];
+	$temporaryNameTwo = $_FILES['submitted_equipment_image']['tmp_name'];
+	$temporaryNameThree = $_FILES['submitted_ingredients_image']['tmp_name'];
+	$temporaryNameFour = $_FILES['submitted_cooking_image']['tmp_name'];
+	
 	$imageNameOne = $_FILES['submitted_image']['name'];
-	$imageDirectory = 'images/recipes/';
-	$imagePath = $imageDirectory . $imageNameOne;
+	$imageNameTwo = $_FILES['submitted_equipment_image']['name'];
+	$imageNameThree = $_FILES['submitted_ingredients_image']['name'];
+	$imageNameFour = $_FILES['submitted_cooking_image']['name'];
+	
+	$imageDirectory = '../images/recipes/';        // double check, and see step 7
+	
+	$imagePath = $imageDirectory . $imageNameOne;  // double check, and see step 7
+	
+	
+	
+	// wait... are you getting $_FILES or are you getting $_POST ..? ... Do you need to json_decode()?
+	// this isn't right... you don't want the name attribute of the input... you want the actual name of the uploaded file
+	
+	//postJSON(mainImageData);
+	//postJSON(equipmentImageData);
+	//postJSON(ingredientsImageData);
+	//postJSON(cookingImageData);
 	
 	
 	
 	// 2. check if the files use an allowed image type
-	$imageCheck = getimagesize($temporaryName);
 	$allowedImageTypes = array(IMAGETYPE_JPEG);
-	if (!in_array($imageCheck[2], $allowedImageTypes)) {
-		exec('submitted_image -bi ' . $temporaryName, $imageCheck);
-	}
+	
+	$imageCheckOne = getimagesize($temporaryNameOne);
+	if (!in_array($imageCheckOne[2], $allowedImageTypes)) { exec('submitted_image -bi ' . $temporaryNameOne, $imageCheckOne); }
+	$imageCheckTwo = getimagesize($temporaryNameTwo);
+	if (!in_array($imageCheckTwo[2], $allowedImageTypes)) { exec('submitted_equipment_image -bi ' . $temporaryNameTwo, $imageCheckTwo); }
+	$imageCheckThree = getimagesize($temporaryNameThree);
+	if (!in_array($imageCheckThree[2], $allowedImageTypes)) { exec('submitted_ingredients_image -bi ' . $temporaryNameThree, $imageCheckThree); }
+	$imageCheckFour = getimagesize($temporaryNameFour);
+	if (!in_array($imageCheckFour[2], $allowedImageTypes)) { exec('submitted_cooking_image -bi ' . $temporaryNameFour, $imageCheckFour); }
 	
 	
 	
 	// 3. check dimensions of images
-	$imageWidth = $imageCheck[0];
-	$imageHeight = $imageCheck[1];
-	if (($imageWidth != "480") && ($imageHeight != "320")) {
+	$imageWidthOne = $imageCheckOne[0];
+	$imageHeightOne = $imageCheckOne[1];
+	if (($imageWidthOne != "480") && ($imageHeightOne != "320")) {
+		$feedback = '<div class="image_feedback">Image dimensions must be 480 pixels wide and 320 pixels high.</div>';
+	}
+	$imageWidthTwo = $imageCheckTwo[0];
+	$imageHeightTwo = $imageCheckTwo[1];
+	if (($imageWidthTwo != "480") && ($imageHeightTwo != "320")) {
+		$feedback = '<div class="image_feedback">Image dimensions must be 480 pixels wide and 320 pixels high.</div>';
+	}
+	$imageWidthThree = $imageCheck[0];
+	$imageHeightThree = $imageCheck[1];
+	if (($imageWidthThree != "480") && ($imageHeightThree != "320")) {
+		$feedback = '<div class="image_feedback">Image dimensions must be 480 pixels wide and 320 pixels high.</div>';
+	}
+	$imageWidthFour = $imageCheckFour[0];
+	$imageHeightFour = $imageCheckFour[1];
+	if (($imageWidthFour != "480") && ($imageHeightFour != "320")) {
 		$feedback = '<div class="image_feedback">Image dimensions must be 480 pixels wide and 320 pixels high.</div>';
 	}
 	
@@ -154,25 +189,47 @@ function uploadRecipeImage() {
 	
 	// 4. check file sizes
 	$maxFileSize = 1000000;  // 1MB
-	if (filesize($temporaryName) > $maxFileSize) {
-		$feedback = '<div class="image_feedback">Image file size is too large.</div>';
-	}
+	if (filesize($temporaryNameOne) > $maxFileSize) { $feedback = '<div class="image_feedback">Image file size is too large.</div>'; }
+	if (filesize($temporaryNameTwo) > $maxFileSize) { $feedback = '<div class="image_feedback">Image file size is too large.</div>'; }
+	if (filesize($temporaryNameThree) > $maxFileSize) { $feedback = '<div class="image_feedback">Image file size is too large.</div>'; }
+	if (filesize($temporaryNameFour) > $maxFileSize) { $feedback = '<div class="image_feedback">Image file size is too large.</div>'; }
 	
 	
 	
 	// 5. check if the files already exist
-	$targetDirectory = 'images/recipes/';
-	$targetFile = $targetDirectory . basename($_FILES['submitted_image']['name']);
-	if (file_exists($targetFile)) {
-		$feedback = '<div class="image_feedback">Image file already exists.</div>';
-		// die(); ?
-	}	
+	$targetDirectory = '../images/recipes/';
+	$targetFileOne = $targetDirectory . basename($_FILES['submitted_image']['name']);
+	if (file_exists($targetFileOne)) { $feedback = '<div class="image_feedback">Image file already exists.</div>'; }
+	$targetFileTwo = $targetDirectory . basename($_FILES['submitted_equipment_image']['name']);
+	if (file_exists($targetFileTwo)) { $feedback = '<div class="image_feedback">Image file already exists.</div>'; }
+	$targetFileThree = $targetDirectory . basename($_FILES['submitted_ingredients_image']['name']);
+	if (file_exists($targetFileThree)) { $feedback = '<div class="image_feedback">Image file already exists.</div>'; }
+	$targetFileFour = $targetDirectory . basename($_FILES['submitted_cooking_image']['name']);
+	if (file_exists($targetFileFour)) { $feedback = '<div class="image_feedback">Image file already exists.</div>'; }
 	
 	
 	
-	// 6. store the 4 image files in the images/recipes directory
-	if (move_uploaded_file($temporaryName, $targetFile)) {
-		chmod($targetFile, 0644);
+	// 6. store the 4 image files in the images/recipes directory               *key step*
+	if (move_uploaded_file($temporaryNameOne, $targetFileOne)) {
+		chmod($targetFileOne, 0644);
+		$feedback = '<div class="image_feedback">Image uploaded!</div>';
+	} else {
+		$feedback = '<div class="image_feedback">There was a problem storing your image. Try again?</div>';
+	}
+	if (move_uploaded_file($temporaryNameTwo, $targetFileTwo)) {
+		chmod($targetFileTwo, 0644);
+		$feedback = '<div class="image_feedback">Image uploaded!</div>';
+	} else {
+		$feedback = '<div class="image_feedback">There was a problem storing your image. Try again?</div>';
+	}
+	if (move_uploaded_file($temporaryNameThree, $targetFileThree)) {
+		chmod($targetFileThree, 0644);
+		$feedback = '<div class="image_feedback">Image uploaded!</div>';
+	} else {
+		$feedback = '<div class="image_feedback">There was a problem storing your image. Try again?</div>';
+	}
+	if (move_uploaded_file($temporaryNameFour, $targetFileFour)) {
+		chmod($targetFileFour, 0644);
 		$feedback = '<div class="image_feedback">Image uploaded!</div>';
 	} else {
 		$feedback = '<div class="image_feedback">There was a problem storing your image. Try again?</div>';
@@ -180,27 +237,36 @@ function uploadRecipeImage() {
 	
 	
 	
-	// 7. make a copy of the recipe_image file, resized and name appended with a "-t", store in the images/irecipes/thumbs directory
-	$thumbDirectory = 'images/recipes/thumbs/';
+	// 7. make a copy of the recipe_image (submitted_image) file, resized and name appended with a "-t", store in the images/recipes/thumbnails directory
+	$thumbDirectory = '../images/recipes/thumbnails/';
 	$thumbName = substr_replace($imageNameOne, '-t.jpg', -4);
 	$thumbPath = $thumbDirectory . $thumbName;
 	$thumbWidth = '120';
 	$thumbHeight = '80';
 	$thumb = imagecreatetruecolor($thumbWidth, $thumbHeight);
 	$image = imagecreatefromjpeg($imagePath);
-	imagecopyresampled($thumb, $image, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $imageWidth, $imageHeight);
+	imagecopyresampled($thumb, $image, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $imageWidthOne, $imageHeightOne);
 	imagejpeg($thumb, $thumbPath, 100);
 	imagedestroy($thumb);
+	
+	
+	
+	
+	
+	// ...
+	
+	
 	
 	
 	
 	// 8. finally, make database insertions
 	
 	// user input
-	$recipeTypeID = $_POST['recipe_type_id'];
-	$cuisineID = $_POST['cuisine_id'];
-	$recipeTitle = $_POST['recipe_title'];                            // sanitize/validate!
-	$recipeDescription = $_POST['recipe_description'];                // sanitize/validate!
+	$recipeTypeID = $_POST['recipeTypeIDJSON'];
+	$cuisineID = $_POST['cuisineIDJSON'];
+	$recipeTitle = $_POST['recipeTitleJSON'];                            // sanitize/validate!
+	$recipeDescription = $_POST['recipeDescriptionJSON'];                // sanitize/validate!
+	
 	$recipeImage = $imageNameOne;
 	$recipeEquipmentImage = $imageNameTwo;
 	$recipeIngredientsImage = $imageNameThree;
@@ -265,9 +331,9 @@ function uploadRecipeImage() {
 		
 		$sql = "INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES " . $allRowsCleaned;
 		$stmt = $conn->prepare($sql);
-		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }
-		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }
-		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }
+		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all equipment_id
+		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all amount
 		$stmt->execute();
 		
 	} elseif ($numberOfEquipment == 1) {
@@ -361,7 +427,8 @@ function uploadRecipeImage() {
 	
 }
 
-if (!empty($_FILES)) { echo uploadRecipeImage(); } // delete this to prevent submission errors... submit using ajax
+
+
 ?>
 <html lang="en">
 <head>
@@ -387,7 +454,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // delete this to prevent sub
 				<!-- type, cuisine, title, & description -->
 				<div>
 					<label class="red_style">Type of Recipe</label>
-					<select name="recipe_type_id" required>
+					<select name="recipe_type_id" id="recipe_type_id" required>
 						<option></option>
 						<?php
 						$sql = 'SELECT recipe_type_id, recipe_type_name FROM nobsc_recipe_types';
@@ -402,7 +469,7 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // delete this to prevent sub
 				
 				<div>
 					<label class="red_style">Cuisine</label>
-					<select name="cuisine_id" required>
+					<select name="cuisine_id" id="cuisine_id" required>
 						<option></option>
 						<?php
 						$sql = 'SELECT cuisine_id, cuisine FROM nobsc_cuisines';
@@ -417,12 +484,12 @@ if (!empty($_FILES)) { echo uploadRecipeImage(); } // delete this to prevent sub
 				
 				<div>
 					<label class="red_style">Title</label>
-					<input type="text" name="recipe_title">
+					<input type="text" name="recipe_title" id="recipe_title">
 				</div>
 				
 				<div>
 					<label class="red_style">Description / Author Note</label>
-					<input type="text" name="recipe_description">
+					<input type="text" name="recipe_description" id="recipe_description">
 				</div>
 				
 				
@@ -669,7 +736,7 @@ function cmsSubmitRecipeActionOne(e) {
 	}
 	for (var i = 0; i < removeStepRowButtons.length; i++) { removeStepRowButtons[i].addEventListener('click', function(e) { removeStepRow(e); }, false); }
 	populateIngredientUnitsAndTypes();
-	submitButton.addEventListener('click', postToServerSide, false);
+	submitButton.addEventListener('click', function(e) { postToServerSide(e); }, false);
 }
 
 
@@ -685,11 +752,11 @@ function clientSideEnforceImageSize(e) {
 			if ((width != 480) || (height != 320)) {
 				alert("Image dimensions must be 480 pixels wide and 320 pixels high.");
 			} else {
-				document.getElementById("preview_image").src = e.target.result;
+				e.target.src = e.target.result;
 			}
 		}
     }
-	reader.readAsDataURL(this.files[0]);
+	reader.readAsDataURL(e.target.files[0]); // separate the preview into its own function, separate from the size constraint validation
 }
 
 
@@ -870,7 +937,7 @@ function getJSON(url, callback) {
 
 function postJSON(data) {
 	var xhttp = new XMLHttpRequest();
-	xhttp.open("POST", "", true);
+	xhttp.open("POST");
 	xhttp.send(data);
 }
 
@@ -979,10 +1046,7 @@ function removeEquipmentRow(e) {
 	var divToRemove = clicked.parentNode;
 	var stepsDiv = document.getElementById('equipment_rows_container');
 	
-	//clicked.removeEventListener('click', removeEquipmentRow);
 	stepsDiv.removeChild(divToRemove);
-	//clicked = null;
-	//divToRemove = null;
 	e.preventDefault();
 	e.stopPropagation();
 }
@@ -992,10 +1056,7 @@ function removeIngredientRow(e) {
 	var divToRemove = clicked.parentNode;
 	var stepsDiv = document.getElementById('ingredient_rows_container');
 	
-	//clicked.removeEventListener('click', removeIngredientRow);
 	stepsDiv.removeChild(divToRemove);
-	//clicked = null;
-	//divToRemove = null;
 	e.preventDefault();
 	e.stopPropagation();
 }
@@ -1005,7 +1066,6 @@ function removeStepRow(e) {
 	var divToRemove = clicked.parentNode;
 	var stepsDiv = document.getElementById('steps_div');
 	
-	//clicked.removeEventListener('click', removeStepRow);
 	stepsDiv.removeChild(divToRemove);
 	e.preventDefault();
 	e.stopPropagation();
@@ -1013,7 +1073,10 @@ function removeStepRow(e) {
 
 
 
-function postToServerSide() {
+function postToServerSide(e) {
+	
+	e.preventDefault();
+	e.stopPropagation();
 	
 	// validate this with an if statement? (duh)
 	
@@ -1065,7 +1128,29 @@ function postToServerSide() {
 	var manualStepsJSON = JSON.stringify(manualSteps);
 	
 	
+	// 7. prepare recipe type id
+	var getRecipeTypeID = document.getElementById("recipe_type_id");
+	var recipeTypeID = getRecipeTypeID.options[getRecipeType.selectedIndex].value;
+	var recipeTypeIDJSON = JSON.stringify(recipeTypeID);
+	// 8. prepare cuisine id
+	var getCuisineID = document.getElementById("cuisine_id");
+	var cuisineID = getCuisineID.options[getCuisineID.selectedIndex].value;
+	var cuisineIDJSON = JSON.stringify(cusineID);
+	// 9. prepare recipe title
+	var getRecipeTitle = document.getElementById("recipe_title");
+	var recipeTitle = getRecipeTitle.value;
+	var recipeTitleJSON = JSON.stringify(recipeTitle);
+	// 10. prepare recipe description
+	var getRecipeDescription = document.getElementById("recipe_description");
+	var recipeDescription = getRecipeDescription.value;
+	var recipeDescriptionJSON = JSON.stringify(recipeDescription);
+	
+	
 	// POST prepared strings to server (These need some sort of status, success, and error feedback)
+	postJSON(recipeTypeIDJSON);
+	postJSON(cuisineIDJSON);
+	postJSON(recipeTitleJSON);
+	postJSON(recipeDescriptionJSON);
 	postJSON(selectAmountsJSON);
 	postJSON(selectEquipmentJSON);
 	postJSON(manualAmountsJSON);
@@ -1075,16 +1160,35 @@ function postToServerSide() {
 	
 	
 	// upload the images using AJAX as well (These need some sort of status, success, and error feedback)
-	var theImages = document.getElementByClassName("submitted_image");
-	for (var i = 0; i < 4; i++) {
-		var theImage = theImages[i];
-		var theName = theImage.getAttribute("name");
-		var theFile = theImage.files[0];
-		var imageData = new FormData();
-		
-		imageData.append(theName, theFile);
-		postJSON(imageData);
-	}
+	var mainImage = document.getElementById("submitted_image");
+	var equipmentImage = document.getElementById("submitted_equipment_image");
+	var ingredientsImage = document.getElementById("submitted_ingredients_image");
+	var cookingImage = document.getElementById("submitted_cooking_image");
+	
+	var theName = mainImage.getAttribute("name");
+	var theFile = mainImage.files[0];
+	var mainImageData = new FormData();
+	mainImageData.append(theName, theFile);
+	
+	var theName = equipmentImage.getAttribute("name");
+	var theFile = equipmentImage.files[0];
+	var equipmentImageData = new FormData();
+	equipmentImageData.append(theName, theFile);
+	
+	var theName = ingredientsImage.getAttribute("name");
+	var theFile = ingredientsImage.files[0];
+	var ingredientsImageData = new FormData();
+	ingredientsImageData.append(theName, theFile);
+	
+	var theName = cookingImage.getAttribute("name");
+	var theFile = cookingImage.files[0];
+	var cookingImageData = new FormData();
+	cookingImageData.append(theName, theFile);
+	
+	postJSON(mainImageData);         // you may need to explicitly set the MIME type to form-data
+	postJSON(equipmentImageData);    // you may need to explicitly set the MIME type to form-data
+	postJSON(ingredientsImageData);  // you may need to explicitly set the MIME type to form-data
+	postJSON(cookingImageData);      // you may need to explicitly set the MIME type to form-data
 	
 }
 
