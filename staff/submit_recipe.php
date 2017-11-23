@@ -467,6 +467,7 @@ function cmsSubmitRecipeActionOne(e) {
 	var selectIngredientType = document.getElementsByClassName('select_ingredient_type');
 	var addEquipmentButton = document.getElementById('add_equipment_button');
 	var addIngredientButton = document.getElementById('add_ingredient_button');
+	var addSubrecipeButton = document.getElementById('add_subrecipe_button');
 	var addStepButton = document.getElementById('add_step_button');
 	var removeEquipmentRowButtons = document.getElementsByClassName('remove_equipment_row_button');
 	var removeIngredientRowButtons = document.getElementsByClassName('remove_ingredient_row_button');
@@ -488,6 +489,7 @@ function cmsSubmitRecipeActionOne(e) {
 	}
 	addEquipmentButton.addEventListener('click', function(e) { prepareEquipmentRow(e); }, false);
 	addIngredientButton.addEventListener('click', function(e) { prepareIngredientRow(e); }, false);
+	addSubrecipeButton.addEventListener('click', function(e) { prepareSubrecipeRow(e); }, false);
 	addStepButton.addEventListener('click', function(e) { addStepRow(e); }, false);
 	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
 		removeEquipmentRowButtons[i].className += " has_remove";
@@ -676,7 +678,7 @@ function populateRecipeUnitsAndTypes() {
 			list.innerHTML = "";
 			var emptyOption = document.createElement("option");
 			selectSubrecipeTypes[i].options.add(emptyOption);
-			for (var j = 0; j < ingredientTypeOptionValues.length; j++) {
+			for (var j = 0; j < subrecipeTypeOptionValues.length; j++) {
 				var newOption = document.createElement("option");
 				newOption.value = subrecipeTypeOptionValues[j];
 				newOption.innerHTML = subrecipeTypeOptionText[j];
@@ -980,7 +982,7 @@ function liveSearch(str) {
 		  document.getElementById("livesearch").style.border = "1px solid #A5ACB2";
 		}
 	}
-	xhttp.open("GET","live_search.php?q=" + str, true);
+	xhttp.open("GET","recipes/live_search.php?q=" + str, true);
 	xhttp.send();
 }
 
