@@ -369,54 +369,6 @@ if (isset($_POST) &&
 	
 	// feedback
 	if (isset($feedback)) { echo $feedback; }
-	
-	/*
-	echo '<p>' . $recipeTypeID . '</p>';
-	echo '<p>' . $cuisineID . '</p>';
-	echo '<p>' . $recipeTitle . '</p>';
-	echo '<p>' . $recipeDescription . '</p>';
-	
-	echo '<p>' . $recipeImage . '</p>';
-	echo '<p>' . $recipeEquipmentImage . '</p>';
-	echo '<p>' . $recipeIngredientsImage . '</p>';
-	echo '<p>' . $recipeCookingImage . '</p>';
-	
-	echo '<p><pre>' . var_dump($selectAmounts) . '</pre></p>';
-	echo '<p><pre>' . var_dump($equipmentIDs) . '</pre></p>';
-	
-	echo '<p><pre>' . var_dump($manualAmounts) . '</pre></p>';
-	echo '<p><pre>' . var_dump($measurements) . '</pre></p>';
-	echo '<p><pre>' . var_dump($ingredientIDs) . '</pre></p>';
-	
-	$recipeID = 1;
-	if (is_array($stepTexts)) {
-		$numberOfSteps = count($stepTexts);
-		if ($numberOfSteps > 1) {
-			$allRows = "";
-			$parametersH = [];
-			$parametersJ = [];
-			$parametersK = [];
-			$stepTextsValues = array_values($stepTexts);
-			for ($i = 0; $i < $numberOfSteps; $i++) {
-				$h = ":recipeID" . $i;
-				$j = ":stepNumber" . $i;
-				$k = ":stepText" . $i;
-				$singleRow = "($h, $j, $k), ";
-				$allRows .= $singleRow;
-				$parametersH[$h] = $recipeID;
-				$parametersJ[$j] = $i;
-				$parametersK[$k] = $stepTextsValues[$i];
-			}
-			$allRowsCleaned = substr($allRows, 0, -2);
-		}
-		echo '<p><pre>' . var_dump($stepTexts) . '</pre></p>';
-		echo '<p><pre>' . var_dump($stepTextsValues) . '</pre></p>';
-		echo '<p>' . $allRowsCleaned . '</p>';
-		echo '<p><pre>' . var_dump($parametersH) . '</pre></p>';
-		echo '<p><pre>' . var_dump($parametersJ) . '</pre></p>';
-		echo '<p><pre>' . var_dump($parametersK) . '</pre></p>';
-	}
-	*/
 }
 
 
