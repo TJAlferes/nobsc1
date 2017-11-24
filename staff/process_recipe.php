@@ -13,6 +13,14 @@ $opt = [
 ];
 $conn = new PDO($dsn, DB_UN, DB_PW, $opt);
 
+
+
+// ////////////////////////////// OVERVIEW //////////////////////////////
+// This page (process_recipe.php) takes the recipe submitted by a staff member
+// and inserts the information into the appropriate database tables
+
+
+
 // process user input                 *** redo/finish validation/feedback/foolproofing ***
 if (isset($_POST) &&
 	!empty($_POST['select_amounts']) && !empty($_POST['select_equipment']) &&
@@ -175,6 +183,8 @@ if (isset($_POST) &&
 	$measurements = explode(",", $_POST['select_units']);
 	$ingredientIDs = explode(",", $_POST['select_ingredients']);
 	
+	if (!empty($_POST['manual_amounts_sub'])) { $manualAmountsSub = explode(",", $_POST['manual_amounts_sub']); }  // sanitize/validate!
+	if (!empty($_POST['select_units_sub'])) { $measurementsSub = explode(",", $_POST['select_units_sub']); }
 	if (!empty($_POST['select_subrecipes'])) { $subrecipeIDs = explode(",", $_POST['select_subrecipes']); }
 	
 	$rawSteps = $_POST['manual_steps'];
@@ -206,165 +216,171 @@ if (isset($_POST) &&
 	
 	// nobsc_recipe_equipment insertions
 	$numberOfEquipment = count($equipmentIDs);
-	if ($numberOfEquipment > 1) {
-		$allRows = "";
-		$parametersH = [];
-		$parametersJ = [];
-		$parametersK = [];
-		$equipmentIDsValues = array_values($equipmentIDs);
-		$selectAmountsValues = array_values($selectAmounts);
-		for ($i = 0; $i < $numberOfEquipment; $i++) {
-			$h = ":recipeID" . $i;
-			$j = ":equipmentID" . $i;
-			$k = ":amount" . $i;
-			$singleRow = "($h, $j, $k), ";
-			$allRows .= $singleRow;
-			$parametersH[$h] = $recipeID;
-			$parametersJ[$j] = $equipmentIDsValues[$i];
-			$parametersK[$k] = $selectAmountsValues[$i];
+	if ($numberOfEquipment > 0) {
+		if ($numberOfEquipment > 1) {
+			$allRows = "";
+			$parametersH = [];
+			$parametersJ = [];
+			$parametersK = [];
+			$equipmentIDsValues = array_values($equipmentIDs);
+			$selectAmountsValues = array_values($selectAmounts);
+			for ($i = 0; $i < $numberOfEquipment; $i++) {
+				$h = ":recipeID" . $i;
+				$j = ":equipmentID" . $i;
+				$k = ":amount" . $i;
+				$singleRow = "($h, $j, $k), ";
+				$allRows .= $singleRow;
+				$parametersH[$h] = $recipeID;
+				$parametersJ[$j] = $equipmentIDsValues[$i];
+				$parametersK[$k] = $selectAmountsValues[$i];
+			}
+			$allRowsCleaned = substr($allRows, 0, -2);
+			
+			$sql = "INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES " . $allRowsCleaned;
+			$stmt = $conn->prepare($sql);
+			foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+			foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all equipment_id
+			foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all amount
+			$stmt->execute();
+			
+		} elseif ($numberOfEquipment == 1) {
+			$sql = 'INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES (:recipeID, :equipmentID, :amount)';
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([':recipeID'    => $recipeID,
+							':equipmentID' => $equipmentIDs,
+							':amount'      => $selectAmounts]);
 		}
-		$allRowsCleaned = substr($allRows, 0, -2);
-		
-		$sql = "INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES " . $allRowsCleaned;
-		$stmt = $conn->prepare($sql);
-		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
-		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all equipment_id
-		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all amount
-		$stmt->execute();
-		
-	} elseif ($numberOfEquipment == 1) {
-		$sql = 'INSERT INTO nobsc_recipe_equipment (recipe_id, equipment_id, amount) VALUES (:recipeID, :equipmentID, :amount)';
-		$stmt = $conn->prepare($sql);
-		$stmt->execute([':recipeID'    => $recipeID,
-						':equipmentID' => $equipmentID,
-						':amount'      => $selectAmount]);
 	}
-	
 	
 	
 	// nobsc_recipe_ingredients insertions
 	$numberOfIngredients = count($ingredientIDs);
-	if ($numberOfIngredients > 1) {
-		$allRows = "";
-		$parametersH = [];
-		$parametersJ = [];
-		$parametersK = [];
-		$parametersM = [];
-		$ingredientIDsValues = array_values($ingredientIDs);
-		$measurementsValues = array_values($measurements);
-		$manualAmountsValues = array_values($manualAmounts);
-		for ($i = 0; $i < $numberOfIngredients; $i++) {
-			$h = ":recipeID" . $i;
-			$j = ":ingredientID" . $i;
-			$k = ":measurementID" . $i;
-			$m = ":amount" . $i;
-			$singleRow = "($h, $j, $k, $m), ";
-			$allRows .= $singleRow;
-			$parametersH[$h] = $recipeID;
-			$parametersJ[$j] = $ingredientIDsValues[$i];
-			$parametersK[$k] = $manualAmountsValues[$i];
-			$parametersM[$m] = $measurementsValues[$i];
+	if ($numberOfIngredients > 0) {
+		if ($numberOfIngredients > 1) {
+			$allRows = "";
+			$parametersH = [];
+			$parametersJ = [];
+			$parametersK = [];
+			$parametersM = [];
+			$ingredientIDsValues = array_values($ingredientIDs);
+			$measurementsValues = array_values($measurements);
+			$manualAmountsValues = array_values($manualAmounts);
+			for ($i = 0; $i < $numberOfIngredients; $i++) {
+				$h = ":recipeID" . $i;
+				$j = ":ingredientID" . $i;
+				$k = ":measurementID" . $i;
+				$m = ":amount" . $i;
+				$singleRow = "($h, $j, $k, $m), ";
+				$allRows .= $singleRow;
+				$parametersH[$h] = $recipeID;
+				$parametersJ[$j] = $ingredientIDsValues[$i];
+				$parametersK[$k] = $manualAmountsValues[$i];
+				$parametersM[$m] = $measurementsValues[$i];
+			}
+			$allRowsCleaned = substr($allRows, 0, -2);
+			
+			$sql = "INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount) VALUES " . $allRowsCleaned;
+			$stmt = $conn->prepare($sql);
+			foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+			foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all ingredient_id
+			foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all measurement_id
+			foreach ($parametersM as $m => $val) { $stmt->bindValue($m, $val, PDO::PARAM_INT); }  // bind all amount
+			$stmt->execute();
+			
+		} elseif ($numberOfIngredients == 1) {
+			$sql = 'INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount) VALUES (:recipeID, :ingredientID, :measurementID, :amount)';
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([':recipeID'      => $recipeID,
+							':ingredientID'  => $ingredientIDs,
+							':measurementID' => $measurements,
+							':amount'        => $manualAmounts]);
 		}
-		$allRowsCleaned = substr($allRows, 0, -2);
-		
-		$sql = "INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount) VALUES " . $allRowsCleaned;
-		$stmt = $conn->prepare($sql);
-		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
-		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all ingredient_id
-		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all measurement_id
-		foreach ($parametersM as $m => $val) { $stmt->bindValue($m, $val, PDO::PARAM_INT); }  // bind all amount
-		$stmt->execute();
-		
-	} elseif ($numberOfIngredients == 1) {
-		$sql = 'INSERT INTO nobsc_recipe_ingredients (recipe_id, ingredient_id, measurement_id, amount) VALUES (:recipeID, :ingredientID, :measurementID, :amount)';
-		$stmt = $conn->prepare($sql);
-		$stmt->execute([':recipeID'      => $recipeID,
-						':ingredientID'  => $ingredientID,
-						':measurementID' => $measurementID,
-						':amount'        => $manualAmount]);
 	}
-	
 	
 	
 	// nobsc_recipe_subrecipes insertions
 	$numberOfSubrecipes = count($subrecipeIDs);
-	if ($numberOfSubrecipes > 1) {
-		$allRows = "";
-		$parametersH = [];
-		$parametersJ = [];
-		$parametersK = [];
-		$parametersM = [];
-		$subrecipeIDsValues = array_values($subrecipeIDs);
-		$measurementsValues = array_values($measurements);      // RENAME ******************** (in the HTML for sure, possibly elsewhere)
-		$manualAmountsValues = array_values($manualAmounts);    // RENAME ******************** (in the HTML for sure, possibly elsewhere)
-		for ($i = 0; $i < $numberOfSubrecipes; $i++) {
-			$h = ":recipeID" . $i;
-			$j = ":subrecipeID" . $i;
-			$k = ":measurementID" . $i;                         // ADD COLUMN TO DB TABLE ********************
-			$m = ":amount" . $i;                                // ADD COLUMN TO DB TABLE ********************
-			$singleRow = "($h, $j, $k, $m), ";
-			$allRows .= $singleRow;
-			$parametersH[$h] = $recipeID;
-			$parametersJ[$j] = $subrecipeIDsValues[$i];
-			$parametersK[$k] = $manualAmountsValues[$i];        // RENAME ********************
-			$parametersM[$m] = $measurementsValues[$i];         // RENAME ********************
+	if ($numberOfSubrecipes > 0) {
+		if ($numberOfSubrecipes > 1) {
+			$allRows = "";
+			$parametersH = [];
+			$parametersJ = [];
+			$parametersK = [];
+			$parametersM = [];
+			$subrecipeIDsValues = array_values($subrecipeIDs);
+			$measurementsSubValues = array_values($measurementsSub);
+			$manualAmountsSubValues = array_values($manualAmountsSub);
+			for ($i = 0; $i < $numberOfSubrecipes; $i++) {
+				$h = ":recipeID" . $i;
+				$j = ":subrecipeID" . $i;
+				$k = ":measurementID" . $i;                         // EDIT COLUMN IN DB TABLE, NEEDS FK TO nobsc_measurements ********************
+				$m = ":amount" . $i;
+				$singleRow = "($h, $j, $k, $m), ";
+				$allRows .= $singleRow;
+				$parametersH[$h] = $recipeID;
+				$parametersJ[$j] = $subrecipeIDsValues[$i];
+				$parametersK[$k] = $manualAmountsSubValues[$i];
+				$parametersM[$m] = $measurementsSubValues[$i];
+			}
+			$allRowsCleaned = substr($allRows, 0, -2);
+			
+			$sql = "INSERT INTO nobsc_recipe_subrecipes (recipe_id, subrecipe_id, measurement_id, amount) VALUES " . $allRowsCleaned;
+			$stmt = $conn->prepare($sql);
+			foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+			foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all ingredient_id
+			foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all measurement_id
+			foreach ($parametersM as $m => $val) { $stmt->bindValue($m, $val, PDO::PARAM_INT); }  // bind all amount
+			$stmt->execute();
+			
+		} elseif ($numberOfSubrecipes == 1) {
+			$sql = 'INSERT INTO nobsc_recipe_subrecipes (recipe_id, subrecipe_id, measurement_id, amount) VALUES (:recipeID, :subrecipeID, :measurementID, :amount)';
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([':recipeID'      => $recipeID,
+							':subrecipeID'   => $subrecipeID,
+							':measurementID' => $measurementsSub,
+							':amount'        => $manualAmountsSub]);
 		}
-		$allRowsCleaned = substr($allRows, 0, -2);
-		
-		$sql = "INSERT INTO nobsc_recipe_subrecipes (recipe_id, subrecipe_id, measurement_id, amount) VALUES " . $allRowsCleaned;
-		$stmt = $conn->prepare($sql);
-		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
-		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all ingredient_id
-		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all measurement_id
-		foreach ($parametersM as $m => $val) { $stmt->bindValue($m, $val, PDO::PARAM_INT); }  // bind all amount
-		$stmt->execute();
-		
-	} elseif ($numberOfSubrecipes == 1) {
-		$sql = 'INSERT INTO nobsc_recipe_subrecipes (recipe_id, subrecipe_id, measurement_id, amount) VALUES (:recipeID, :subrecipeID, :measurementID, :amount)';
-		$stmt = $conn->prepare($sql);
-		$stmt->execute([':recipeID'      => $recipeID,
-						':subrecipeID'   => $subrecipeID,
-						':measurementID' => $measurementID,
-						':amount'        => $manualAmount]);    // RENAME ********************
 	}
-	
 	
 	
 	// nobsc_steps insertions
 	$numberOfSteps = count($stepTexts);
-	if ($numberOfSteps > 1) {
-		$allRows = "";
-		$parametersH = [];
-		$parametersJ = [];
-		$parametersK = [];
-		$stepTextsValues = array_values($stepTexts);
-		for ($i = 0; $i < $numberOfSteps; $i++) {
-			$h = ":recipeID" . $i;
-			$j = ":stepNumber" . $i;
-			$k = ":stepText" . $i;
-			$singleRow = "($h, $j, $k), ";
-			$allRows .= $singleRow;
-			$parametersH[$h] = $recipeID;
-			$parametersJ[$j] = $i;
-			$parametersK[$k] = $stepTextsValues[$i];
+	if ($numberOfSteps > 0) {
+		if ($numberOfSteps > 1) {
+			$allRows = "";
+			$parametersH = [];
+			$parametersJ = [];
+			$parametersK = [];
+			$stepTextsValues = array_values($stepTexts);
+			for ($i = 0; $i < $numberOfSteps; $i++) {
+				$h = ":recipeID" . $i;
+				$j = ":stepNumber" . $i;
+				$k = ":stepText" . $i;
+				$singleRow = "($h, $j, $k), ";
+				$allRows .= $singleRow;
+				$parametersH[$h] = $recipeID;
+				$parametersJ[$j] = $i;
+				$parametersK[$k] = $stepTextsValues[$i];
+			}
+			$allRowsCleaned = substr($allRows, 0, -2);
+			
+			$sql = "INSERT INTO nobsc_steps (recipe_id, step_number, step_text) VALUES " . $allRowsCleaned;
+			$stmt = $conn->prepare($sql);	
+			foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
+			foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all step_number
+			foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all step_text
+			$stmt->execute();
+			
+		} elseif ($numberOfSteps == 1) {
+			$stepNumber = 1;
+			
+			$sql = 'INSERT INTO nobsc_steps (recipe_id, step_number, step_text) VALUES (:recipeID, :stepNumber, :stepText)';
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([':recipeID'   => $recipeID,
+							':stepNumber' => $stepNumber,
+							':stepText'   => $stepTexts]);
 		}
-		$allRowsCleaned = substr($allRows, 0, -2);
-		
-		$sql = "INSERT INTO nobsc_steps (recipe_id, step_number, step_text) VALUES " . $allRowsCleaned;
-		$stmt = $conn->prepare($sql);	
-		foreach ($parametersH as $h => $val) { $stmt->bindValue($h, $val, PDO::PARAM_INT); }  // bind all recipe_id
-		foreach ($parametersJ as $j => $val) { $stmt->bindValue($j, $val, PDO::PARAM_INT); }  // bind all step_number
-		foreach ($parametersK as $k => $val) { $stmt->bindValue($k, $val, PDO::PARAM_INT); }  // bind all step_text
-		$stmt->execute();
-		
-	} elseif ($numberOfSteps == 1) {
-		$sql = 'INSERT INTO nobsc_steps (recipe_id, step_number, step_text) VALUES (:recipeID, :stepNumber, :stepText)';
-		$stmt = $conn->prepare($sql);
-		$stmt->execute([':recipeID'   => $recipeID,
-						':stepNumber' => $stepNumber,
-						':stepText'   => $stepText]);
 	}
-	
 	
 	
 	// feedback

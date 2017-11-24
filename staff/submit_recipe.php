@@ -23,6 +23,12 @@ $conn = new PDO($dsn, DB_UN, DB_PW, $opt);
 
 
 
+// ////////////////////////////// OVERVIEW //////////////////////////////
+// This page (submit_recipe.php) provides a clean, standardized user interface where a staff member can enter a new recipe.
+// Their input then gets sent over to another page (process_recipe.php) to get inserted into database tables.
+
+
+
 // data for equipment row
 $sql = 'SELECT equipment_id, equipment_name FROM nobsc_equipment WHERE equipment_type_id = 2 ORDER BY equipment_name ASC';
 $stmt = $conn->query($sql);
@@ -455,6 +461,8 @@ Function #1 is called on window load.
 
 */
 
+
+
 // 1.
 function cmsSubmitRecipeActionOne(e) {
 	
@@ -465,20 +473,24 @@ function cmsSubmitRecipeActionOne(e) {
 	
 	var selectEquipmentType = document.getElementsByClassName('select_equipment_type');
 	var selectIngredientType = document.getElementsByClassName('select_ingredient_type');
+	
 	var addEquipmentButton = document.getElementById('add_equipment_button');
 	var addIngredientButton = document.getElementById('add_ingredient_button');
 	var addSubrecipeButton = document.getElementById('add_subrecipe_button');
 	var addStepButton = document.getElementById('add_step_button');
+	
 	var removeEquipmentRowButtons = document.getElementsByClassName('remove_equipment_row_button');
 	var removeIngredientRowButtons = document.getElementsByClassName('remove_ingredient_row_button');
 	var removeSubrecipeRowButtons = document.getElementsByClassName('remove_subrecipe_row_button');
 	var removeStepRowButtons = document.getElementsByClassName('remove_step_row_button');
+	
 	var submitButton = document.getElementById("submit_button");
 	
 	image.addEventListener('change', previewImage, false);
 	eImage.addEventListener('change', previewEImage, false);
 	iImage.addEventListener('change', previewIImage, false);
 	cImage.addEventListener('change', previewCImage, false);
+	
 	for (var i = 0; i < selectEquipmentType.length; i++) {
 		selectEquipmentType[i].className += " has_match";
 		selectEquipmentType[i].addEventListener('change', function(e) { matchEquipmentToType(e); }, false);
@@ -487,10 +499,12 @@ function cmsSubmitRecipeActionOne(e) {
 		selectEquipmentType[i].className += " has_match";
 		selectIngredientType[i].addEventListener('change', function(e) { matchIngredientToType(e); }, false);
 	}
+	
 	addEquipmentButton.addEventListener('click', function(e) { prepareEquipmentRow(e); }, false);
 	addIngredientButton.addEventListener('click', function(e) { prepareIngredientRow(e); }, false);
 	addSubrecipeButton.addEventListener('click', function(e) { prepareSubrecipeRow(e); }, false);
 	addStepButton.addEventListener('click', function(e) { addStepRow(e); }, false);
+	
 	for (var i = 0; i < removeEquipmentRowButtons.length; i++) {
 		removeEquipmentRowButtons[i].className += " has_remove";
 		removeEquipmentRowButtons[i].addEventListener('click', function(e) { removeEquipmentRow(e); }, false);
@@ -503,8 +517,12 @@ function cmsSubmitRecipeActionOne(e) {
 		removeSubrecipeRowButtons[i].className += " has_remove";
 		removeSubrecipeRowButtons[i].addEventListener('click', function(e) { removeSubrecipeRow(e); }, false);
 	}
-	for (var i = 0; i < removeStepRowButtons.length; i++) { removeStepRowButtons[i].addEventListener('click', function(e) { removeStepRow(e); }, false); }
+	for (var i = 0; i < removeStepRowButtons.length; i++) {
+		removeStepRowButtons[i].addEventListener('click', function(e) { removeStepRow(e); }, false);
+	}
+	
 	populateIngredientUnitsAndTypes();
+	
 	submitButton.addEventListener('click', function(e) { postToServerSide(e); }, false);
 	
 }
@@ -1102,6 +1120,31 @@ function postToServerSide(e) {
 	var selectIngredients = [];
 	for (var i = 0; i < getSelectIngredients.length; i++) {
 		selectIngredients[i] = getSelectIngredients[i].options[getSelectIngredients[i].selectedIndex].value;
+	}
+	
+	// 5.5 prepare (subrecipe) amounts
+	if (document.getElementsByClassName("manual_amount_sub")) {
+		var getManualSubAmounts = document.getElementsByClassName("manual_amount_sub");
+		var manualSubAmounts = [];
+		for (var i = 0; i < getManualSubAmounts.length; i++) {
+			manualSubAmounts[i] = getManualSubAmounts[i].value;
+		}
+	}
+	// 5.5 prepare (subrecipe) measurement ids
+	if (document.getElementsByClassName("select_unit_sub")) {
+		var getSelectSubUnits = document.getElementsByClassName("select_unit");
+		var selectSubUnits = [];
+		for (var i = 0; i < getSelectSubUnits.length; i++) {
+			selectSubUnits[i] = getSelectSubUnits[i].options[getSelectSubUnits[i].selectedIndex].value;
+		}
+	}
+	// 5.5 prepare (subrecipe) recipe ids
+	if (document.getElementsByClassName("select_subrecipes")) {
+		var getSelectSubrecipes = document.getElementsByClassName("select_subrecipes");
+		var selectSubrecipes = [];
+		for (var i = 0; i < getSelectSubrecipes.length; i++) {
+			selectSubrecipes[i] = getSelectSubrecipes[i].options[getSelectSubrecipes[i].selectedIndex].value;
+		}
 	}
 	
 	// 6. prepare step texts
