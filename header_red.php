@@ -26,6 +26,9 @@
 				</div>
 				<div id="search_insert">
 					<input id="search_insert_input" type="text" autocomplete="off">
+					<div id="search_auto_suggestions">
+						<!-- live from the database table column -->
+					</div>
 				</div>
 				<div id="search_execute">
 					<input id="search_execute_input" type="submit" value="Search">
