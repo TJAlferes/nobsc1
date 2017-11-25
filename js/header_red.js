@@ -35,7 +35,7 @@ function liveSearchHide(e) {
 	var sAuto = document.getElementById("search_auto_suggestions");
 	var sAutoShadow = document.getElementById("search_auto_suggestions_shadow");
 	
-	if (e.target != sInsert) && (e.target != sAuto)) {
+	if ((e.target != sInsert) && (e.target != sAuto)) {
 		sAuto.style.display = "none";
 		sAutoShadow.style.display = "none";
 	}
@@ -44,7 +44,24 @@ function liveSearchHide(e) {
 
 
 function liveSearchRed() {
+	var sInsert = document.getElementById("search_insert_input").value;
 	
+	if (sInsert != "") {
+		var fdata = new FormData();
+		var xhttp = new XMLHttpRequest();
+		
+		fdata.append("search_insert_input", sInsert);
+		
+		xhttp.open("POST", "search_auto_suggestions.php", true);
+		xhttp.onreadystatechange = function() {
+			if (xhttp.readyState == 4 && xhttp.status == 200) {
+				var sAuto = document.getElementById("search_auto_suggestions");
+				
+				sAuto.innerHTML = xhttp.responseText;
+			}
+		}
+		xhttp.send(fdata);
+	}
 }
 
 
