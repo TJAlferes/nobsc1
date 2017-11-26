@@ -25,12 +25,14 @@ if (isset($_POST) && !empty($_POST['search_insert_input'])) {
 	$hint = "";
 	
 	if (strlen($input) > 0) {
-		$sql = 'SELECT ingredient_id, ingredient_name FROM nobsc_ingredients WHERE MATCH (ingredient_name) AGAINST (:input IN BOOLEAN MODE) LIMIT 5';
+		$sql = 'SELECT ingredient_id, ingredient_name FROM nobsc_ingredients
+				WHERE MATCH (ingredient_name) AGAINST (:input IN BOOLEAN MODE) LIMIT 5';
 		$stmt = $conn->prepare($sql);
 		$stmt->execute([':input' => $input]);
 		
 		while (($row = $stmt->fetch()) !== false) {
-			$hint .= '<span class="search_suggestion_row"><a href="view_ingredient.php?ingredient_id=' . $row['ingredient_id'] . '">' . substr($row['ingredient_name'], 0, 30) . '</a></span>';
+			$hint .= '<span class="search_suggestion_row"><a href="view_ingredient.php?ingredient_id=' .
+			$row['ingredient_id'] . '">' . substr($row['ingredient_name'], 0, 30) . '</a></span>';
 		}
 	}
 	
