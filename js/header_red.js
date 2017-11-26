@@ -43,6 +43,20 @@ function liveSearchHide(e) {
 
 
 
+function liveSearchWidthExtend(e) {
+	var childLink = e.firstChild.href;
+	
+	window.location.href = childLink;
+}
+
+
+
+function liveSearchArrowKeysSupport() {
+	
+}
+
+
+
 function liveSearchRed() {
 	var sInsert = document.getElementById("search_insert_input").value;
 	
@@ -63,5 +77,6 @@ function liveSearchRed() {
 		xhttp.send(fdata);
 	}
 }
+
 
 

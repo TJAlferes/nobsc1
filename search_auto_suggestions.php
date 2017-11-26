@@ -31,7 +31,7 @@ if (isset($_POST) && !empty($_POST['search_insert_input'])) {
 		$stmt->execute([':input' => $input]);
 		
 		while (($row = $stmt->fetch()) !== false) {
-			$hint .= '<span class="search_suggestion_row"><a href="view_ingredient.php?ingredient_id=' .
+			$hint .= '<span onclick="liveSearchWidthExtend(this)" class="search_suggestion_row"><a href="view_ingredient.php?ingredient_id=' .
 			$row['ingredient_id'] . '">' . substr($row['ingredient_name'], 0, 30) . '</a></span>';
 		}
 	}
