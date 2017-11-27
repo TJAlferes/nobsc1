@@ -43,10 +43,14 @@ if (isset($_POST) && !empty($_POST['search_insert_input'])) {
 			$clip = ((int)$position + (int)$inputLength);
 			$beforeInput = "";
 			$afterInput = "";
-			if ((int)$position != 0) {
-				$beforeInput .= mb_substr($itemName, 0, (int)$position);       // for this you want only everything before the position, "Standard Slicing ", so "Standard Slicing Cucumber" pos should be 17
+			if ((int)$position > 0) {
+				$beforeInput .= mb_substr($itemName, -$position, $inputLength);       // for this you want only everything before the position, "Standard Slicing ", so "Standard Slicing Cucumber" pos should be 17
 			}
-			$afterInput .= mb_substr($itemName, (int)$clip);               // this should be right actually
+			$afterInput .= mb_substr($itemName, 0, (int)$position);               // this should be right actually
+			
+			// keep messing around with subtr and maybe subtr_replace
+			
+			// APPLY DEBOUNCING ON FRONT END
 			
 			//$afterInput = substr($itemName, $inputLength);      // this was just "ndard Slicing Cucumber" which resulted in "cucndard Slicing Cucumber", instead you want "umber"
 			
@@ -58,7 +62,6 @@ if (isset($_POST) && !empty($_POST['search_insert_input'])) {
 			/*
 			$hint .= '<span onclick="liveSearchWidthExtend(this)" class="search_suggestion_row"><a href="https://www.nobullshitcooking.com/view_ingredient.php?ingredient_id=' .
 			$row['ingredient_id'] . '">' . (int)$position . '</a></span>';
-			*/
 			
 			if ((int)$position == 0) {
 				$hint .= '<span onclick="liveSearchWidthExtend(this)" class="search_suggestion_row"><a href="https://www.nobullshitcooking.com/view_ingredient.php?ingredient_id=' .
@@ -67,6 +70,10 @@ if (isset($_POST) && !empty($_POST['search_insert_input'])) {
 				$hint .= '<span onclick="liveSearchWidthExtend(this)" class="search_suggestion_row"><a href="https://www.nobullshitcooking.com/view_ingredient.php?ingredient_id=' .
 				$row['ingredient_id'] . '">' . $beforeInput . '<mark>' . $input . '</mark>' . $afterInput . '</a></span>';
 			}
+			*/
+			
+			$hint .= '<span onclick="liveSearchWidthExtend(this)" class="search_suggestion_row"><a href="https://www.nobullshitcooking.com/view_ingredient.php?ingredient_id=' .
+			$row['ingredient_id'] . '">' . $beforeInput . '<mark>' . $input . '</mark>' . $afterInput . '</a></span>';
 		}
 	}
 	

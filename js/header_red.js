@@ -57,7 +57,7 @@ function liveSearchArrowKeysSupport() {
 
 
 
-function liveSearchRed() {
+function liveSearchRed() {  // THIS NEEDS DEBOUNCING (time: half a second?)
 	var sInsert = document.getElementById("search_insert_input").value;
 	
 	if (sInsert.length > 2) {
