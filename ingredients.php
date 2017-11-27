@@ -87,6 +87,7 @@ if (isset($_GET['s']) && is_numeric($_GET['s'])) {
 	
 	
 	<main>
+		<div id="search_auto_suggestions_shadow"></div>
 		<?php include 'food_drop.php'; ?>
 		<div id="page">
 		
@@ -283,23 +284,32 @@ if (isset($_GET['s']) && is_numeric($_GET['s'])) {
 	
 	
 	
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="js/nobsc_fancy_menu_scripts.js"></script>
+<script src="js/nobsc_fancy_menu_plugin.js"></script>
+<script src="js/header_red.js"></script>
+<script>
+
+function headerRedActionOne() {
+	var sInsert = document.getElementById("search_insert_input");
 	
-	<script src="js/nobsc_fancy_menu_scripts.js"></script>
-	<script src="js/nobsc_fancy_menu_plugin.js"></script>
-	
-	<script src="js/nobsc_header_red_scripts.js"></script>
-	
-	<script>
-	// functions to automatically apply filter changes
-	function ingredientsActionOne() {
-		var iTID = document.getElementById('itid');
-		iTID.addEventListener("change", niceFilter, false);
-	}
-	function niceFilter() {
-		this.submit();
-	}
-	window.addEventListener("load", ingredientsActionOne, false);
-	</script>
+	sInsert.addEventListener("input", liveSearchRed, false);
+	sInsert.addEventListener("input", liveSearchShow, false);
+	document.addEventListener("click", function(e) { liveSearchHide(e); }, false);
+}
+
+// functions to automatically apply filter changes
+function ingredientsActionOne() {
+	var iTID = document.getElementById('itid');
+	iTID.addEventListener("change", niceFilter, false);
+}
+function niceFilter() {
+	this.submit();
+}
+
+window.addEventListener("load", function() { headerRedActionOne(); }, false);
+window.addEventListener("load", ingredientsActionOne, false);
+
+</script>
 </body>
 </html>

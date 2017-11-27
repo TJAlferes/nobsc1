@@ -60,13 +60,13 @@ function liveSearchArrowKeysSupport() {
 function liveSearchRed() {
 	var sInsert = document.getElementById("search_insert_input").value;
 	
-	if (sInsert != "") {
+	if (sInsert.length > 2) {
 		var fdata = new FormData();
 		var xhttp = new XMLHttpRequest();
 		
 		fdata.append("search_insert_input", sInsert);
 		
-		xhttp.open("POST", "search_auto_suggestions.php", true);
+		xhttp.open("POST", "https://www.nobullshitcooking.com/search_auto_suggestions.php", true);
 		xhttp.onreadystatechange = function() {
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
 				var sAuto = document.getElementById("search_auto_suggestions");

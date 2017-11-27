@@ -10,7 +10,9 @@
 	</select>
 	<label>Subrecipe:</label>
 	<input class="select_subrecipe" required>
-	<datalist>
-	</datalist>
+	<div class="live_suggestions">
+		<option value="8">Recipe Eight</option>
+		<option value="27">Recipe Twenty Seven</option>
+	</div>
 	<button class="remove_subrecipe_row_button">Remove</button>
 </div>

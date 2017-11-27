@@ -26,7 +26,7 @@
 				<span>Messages</span>
 				<span>Friends</span>
 				<hr>
-				<a href="nobsc_supplements.php"><span>Supplements</span></a>
+				<a href="content/supplements.php"><span>Supplements</span></a>
 				<span>Equipment</span>
 				<hr>
 				<span>Water Filtration</span>
