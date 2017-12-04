@@ -20,7 +20,7 @@
 		<div id="page">
 			<aside id="left_aside">
 				<span>Username</span>
-				<a href="nobsc_planner.php"><span>Your Plan</span></a>
+				<a href="planner.php"><span>Your Plan</span></a>
 				<hr>
 				<a href="#"><span id="span_new">New</span></a>
 				<span>Messages</span>
@@ -47,6 +47,34 @@
 			</aside>
 			<article id="torso">
 				<div id="container">
+
+					
+					
+					<div class="news_item">
+						<h1>Here Is a Sample News Article Title Text</h1>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+						Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
+					</div>
+					
+					<div class="news_item">
+						<h1>Here Is a Sample News Article Title Text</h1>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+						Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
+					</div>
+					
+					<div class="news_item">
+						<h1>Here Is a Sample News Article Title Text</h1>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+						Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
+					</div>
+					
+					<div class="news_item">
+						<h1>Here Is a Sample News Article Title Text</h1>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+						Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
+					</div>
+					
+					<!--
 					<h1>Vitamins, Minerals, and Micronutrients</h1>
 					<p>Learn about: <select>
 						<option id="opt01">Vitamin A (Retinoids and Carotenoids)</option>
@@ -118,6 +146,8 @@
 							</tbody>
 						</table>
 					</div>
+					-->
+					
 				</div>
 			</article>
 			<aside id="right_aside">
